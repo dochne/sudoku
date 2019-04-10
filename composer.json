@@ -1,0 +1,17 @@
+{
+    "name": "dolondro/sudoku",
+    "description": "A quick attempt at a sudoku solver",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Doug Nelson",
+            "email": "dougnelson@silktide.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2"
+    },
+    "autoload": {
+        "psr-4": {"Dolondro\\Sudoku\\": "src/"}
+    }
+}

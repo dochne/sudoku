@@ -1,0 +1,9 @@
+version: '3'
+services:
+  webapp:
+    container_name: sudoku_webapp_1
+    image: php:7.3-apache-stretch
+    ports:
+      - "80:80"
+    volumes:
+      - "./:/var/www:delegated"
