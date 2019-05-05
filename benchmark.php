@@ -32,9 +32,11 @@ foreach ($implementations as $index => [$language, $folder, $implementationName,
 
     if (!file_exists($cacheFilename)) {
         chdir($folder);
+        $start = microtime(true);
         $output = "";
         exec($implementationCommand. " ". $example, $output);
-        file_put_contents($cacheFilename, implode("\n", $output));
+        $taken = microtime(true) - $start;
+        file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => implode("\n", $output)], JSON_PRETTY_PRINT));
         chdir(__DIR__);
     }
 
