@@ -21,6 +21,11 @@ class SudokuGrid
         return isset($this->data[$row][$col]);
     }
 
+    public function get(int $row, int $col) : int
+    {
+        return $this->data[$row][$col];
+    }
+
     public function isValid(int $row, int $col, int $value) : bool
     {
         // Rows first!

@@ -1,0 +1,7 @@
+{
+  "language": "php",
+  "implementations": {
+    "bruteforce": "php bin/bruteforce.php",
+    "psuedo-dancinglinks": "php bin/psuedodancinglinks.php"
+  }
+}
