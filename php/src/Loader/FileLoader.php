@@ -14,6 +14,9 @@ class FileLoader implements LoaderInterface
 {
     public function load($props) : SudokuGrid
     {
+        if (!file_exists($props)) {
+            throw new \Exception("File does not exist");
+        }
         // we're expecting props to be a filename
         $contents = file_get_contents($props);
         $contents = str_replace("\r", "", $contents);

@@ -2,6 +2,8 @@
 include("vendor/autoload.php");
 chdir(__DIR__);
 
+$example = realpath(__DIR__ . "/examples/example1.txt");
+
 $implementations = [];
 $directories = scandir(__DIR__);
 foreach ($directories as $folder) {
@@ -31,7 +33,7 @@ foreach ($implementations as $index => [$language, $folder, $implementationName,
     if (!file_exists($cacheFilename)) {
         chdir($folder);
         $output = "";
-        exec($implementationCommand, $output);
+        exec($implementationCommand. " ". $example, $output);
         file_put_contents($cacheFilename, implode("\n", $output));
         chdir(__DIR__);
     }
