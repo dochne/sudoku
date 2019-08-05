@@ -1,6 +1,6 @@
 <?php
 include(__DIR__ . "/../vendor/autoload.php");
-$solver = new \Dolondro\Sudoku\Solver\PsuedoDancingLinkSolver();
+$solver = new \Dolondro\Sudoku\Solver\PseudoDancingLinkSolver();
 $loader = new \Dolondro\Sudoku\Loader\FileLoader();
 $grid = $loader->load($argv[1]);
 
