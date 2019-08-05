@@ -104,8 +104,6 @@ $file = "# Benchmarks\n";
 $file .= "----\n";
 $file .= "|" . implode("|", $headers) . "|\n";
 $file .= "|" . implode("|", array_map(function($v) {return "---";}, $headers)) . "|\n";
-
-$file .= "----\n";
 foreach ($rows as $row) {
     $file .= "|" . implode("|", $row) . "|\n";
 }
