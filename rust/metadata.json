@@ -1,0 +1,9 @@
+{
+  "language": "rust",
+  "implementations": {
+    "bruteforce": {
+      "build": "cargo build --release --target-dir bin",
+      "run": "bin/release/sudoku"
+    }
+  }
+}

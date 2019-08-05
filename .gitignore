@@ -2,3 +2,5 @@
 vendor
 /cache
 /composer.lock
+/rust/bin
+/rust/target
