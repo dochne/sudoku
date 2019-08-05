@@ -1,0 +1,9 @@
+{
+  "language": "go",
+  "implementations": {
+    "bruteforce": {
+      "build": "go build && chmod +x ./golang",
+      "run": "./golang"
+    }
+  }
+}

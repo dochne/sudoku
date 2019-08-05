@@ -67,9 +67,8 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
 
 // Order by fastest to slowest
 usort($implementations, function($arr1, $arr2) {
-    return $arr1["result"]["time"] - $arr2["result"]["time"];
+    return $arr2["result"]["time"] < $arr1["result"]["time"];
 });
-
 
 $includeResult = false;
 
@@ -82,7 +81,7 @@ foreach ($implementations as $implementation) {
     $row = [
         $implementation["language"],
         $implementation["name"],
-        $implementation["result"]["time"],
+        round($implementation["result"]["time"], 6),
         $implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
     ];
 
@@ -101,12 +100,10 @@ $table->render();
 echo "\n";
 
 $file = "# Benchmarks\n";
-$file .= "----\n";
 $file .= "|" . implode("|", $headers) . "|\n";
 $file .= "|" . implode("|", array_map(function($v) {return "---";}, $headers)) . "|\n";
 foreach ($rows as $row) {
     $file .= "|" . implode("|", $row) . "|\n";
 }
-$file .= "---\n";
-file_put_contents("BENCHMARK.md", $file);
+file_put_contents("benchmark.md", $file);
 

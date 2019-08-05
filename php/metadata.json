@@ -4,8 +4,8 @@
     "bruteforce": {
       "run": "php bin/bruteforce.php"
     },
-    "psuedo-dancinglinks": {
-      "run": "php bin/psuedodancinglinks.php"
+    "pseudo-dancinglinks": {
+      "run": "php bin/pseudodancinglinks.php"
     }
   }
 }

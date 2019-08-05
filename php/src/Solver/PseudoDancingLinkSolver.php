@@ -5,7 +5,7 @@ namespace Dolondro\Sudoku\Solver;
 use Dolondro\Sudoku\Solver\PsuedoDancingLink\NumberList;
 use Dolondro\Sudoku\SudokuGrid;
 
-class PsuedoDancingLinkSolver
+class PseudoDancingLinkSolver
 {
     public function solve(SudokuGrid $grid) : ?SudokuGrid
     {
