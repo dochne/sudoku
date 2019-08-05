@@ -8,6 +8,6 @@ $microtime = microtime(true);
 $grid = $solver->solve($grid);
 $result = [];
 foreach ($grid->toArray() as $array) {
-    $result[] = implode("", $array);
+    $result[] = implode(" ", $array);
 }
 echo implode("\n", $result);

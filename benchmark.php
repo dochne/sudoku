@@ -2,7 +2,9 @@
 include("vendor/autoload.php");
 chdir(__DIR__);
 
-$example = realpath(__DIR__ . "/examples/example1.txt");
+$exampleInputFile = realpath(__DIR__ . "/examples/2_input.txt");
+$exampleOutputFile = realpath(__DIR__ . "/examples/2_output.txt");
+$exampleOutput = str_replace(["\n", " ", "\t"], "", file_get_contents($exampleOutputFile));
 
 $implementations = [];
 $directories = scandir(__DIR__);
@@ -19,42 +21,92 @@ foreach ($directories as $folder) {
         }
 
         ["language" => $language, "implementations" => $languageImplementations] = $data;
-        foreach ($languageImplementations as $implementationName => $implementationCommand) {
-            $implementations[] = [$language, $folder, $implementationName, $implementationCommand];
+        foreach ($languageImplementations as $implementationName => $implementationConfig) {
+            $implementations[] = [
+                "language" => $language,
+                "folder" => $folder,
+                "name" => $implementationName,
+                "config" => $implementationConfig
+            ];
         }
     }
 }
 
-echo "Running Benchmarks\n";
-foreach ($implementations as $index => [$language, $folder, $implementationName, $implementationCommand]) {
-    echo "Running {$language}/{$implementationName}\n";
-    $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $implementationName);
+$noCache = ($argv[1] ?? "") ==="--no-cache";
 
-    if (!file_exists($cacheFilename)) {
+if ($noCache) {
+    echo "Cache disabled!\n";
+}
+echo "Running Benchmarks\n";
+foreach ($implementations as $index => ["language" => $language, "folder" => $folder, "name" => $name, "config" => $config]) {
+    echo "Running {$language}/{$name}\n";
+    $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $name);
+
+    if (!file_exists($cacheFilename) || $noCache) {
         chdir($folder);
+        if (isset($config["build"])) {
+            echo "Running build step: {$config["build"]}\n";
+            exec($config["build"]);
+        }
+
         $start = microtime(true);
         $output = "";
-        exec($implementationCommand. " ". $example, $output);
+        $command = $config["run"]. " ". $exampleInputFile;
+        echo "Running {$command}\n";
+        exec($command, $output);
         $taken = microtime(true) - $start;
-        file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => implode("\n", $output)], JSON_PRETTY_PRINT));
+        $result = implode("\n", $output);
+        $valid = ($exampleOutput === str_replace(["\n", " ", "\t"], "", $result));
+
+        file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid], JSON_PRETTY_PRINT));
         chdir(__DIR__);
     }
 
-    $implementations[$index][] = json_decode(file_get_contents($cacheFilename), true);
+    $implementations[$index]["result"] = json_decode(file_get_contents($cacheFilename), true);
 }
 
 // Order by fastest to slowest
 usort($implementations, function($arr1, $arr2) {
-    return $arr1[4]["time"] - $arr2[4]["time"];
+    return $arr1["result"]["time"] - $arr2["result"]["time"];
 });
+
+
+$includeResult = false;
+
+$headers = ["Language", "ImplementationName", "Benchmark", "Valid"];
+if ($includeResult) {
+    $headers[] = "Result";
+}
+$rows = [];
+foreach ($implementations as $implementation) {
+    $row = [
+        $implementation["language"],
+        $implementation["name"],
+        $implementation["result"]["time"],
+        $implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
+    ];
+
+    if ($includeResult) {
+        $row[] = "-----------------\n" . $implementation["result"]["result"];
+    }
+    $rows[] = $row;
+}
 
 
 $output = new \Symfony\Component\Console\Output\StreamOutput(STDOUT);
 $table = new \Symfony\Component\Console\Helper\Table($output);
-
-$table->setHeaders(["Language", "ImplementationName", "Benchmark"]);
-foreach ($implementations as $implementation) {
-    $table->addRow([$implementation[0], $implementation[2], $implementation[4]["time"]]);
-}
+$table->setHeaders($headers);
+$table->addRows($rows);
 $table->render();
 echo "\n";
+
+$file = "# Benchmarks\n";
+$file .= "----\n";
+$file .= implode("|", $headers) . "\n";
+$file .= "----\n";
+foreach ($rows as $row) {
+    $file .= implode("|", $row) . "\n";
+}
+$file .= "---\n";
+file_put_contents("BENCHMARK.md", $file);
+

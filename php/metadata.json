@@ -1,7 +1,11 @@
 {
   "language": "php",
   "implementations": {
-    "bruteforce": "php bin/bruteforce.php",
-    "psuedo-dancinglinks": "php bin/psuedodancinglinks.php"
+    "bruteforce": {
+      "run": "php bin/bruteforce.php"
+    },
+    "psuedo-dancinglinks": {
+      "run": "php bin/psuedodancinglinks.php"
+    }
   }
 }

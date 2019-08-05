@@ -43,11 +43,11 @@ class SudokuGrid
         }
 
         // Now, work out boxes
-        $rowStart = floor($row % 3);
-        $colStart = floor($col % 3);
+        $rowStart = (int)floor($row / 3) * 3;
+        $colStart = (int)floor($col / 3) * 3;
         for ($rowI = $rowStart; $rowI < $rowStart + 3; $rowI++) {
             for ($colI = $colStart; $colI < $colStart + 3; $colI++) {
-                if ($this->data[$rowI][$col] === $value) {
+                if ($this->data[$rowI][$colI] == $value) {
                     return false;
                 }
             }
