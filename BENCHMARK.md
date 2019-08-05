@@ -1,6 +1,7 @@
 # Benchmarks
 ----
 |Language|ImplementationName|Benchmark|Valid|
+|---|---|---|---|
 ----
 |go|bruteforce|0.070214033126831|✘|
 |php|bruteforce|0.15123796463013|✓|
