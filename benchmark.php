@@ -102,10 +102,10 @@ echo "\n";
 
 $file = "# Benchmarks\n";
 $file .= "----\n";
-$file .= implode("|", $headers) . "\n";
+$file .= "|" . implode("|", $headers) . "|\n";
 $file .= "----\n";
 foreach ($rows as $row) {
-    $file .= implode("|", $row) . "\n";
+    $file .= "|" . implode("|", $row) . "|\n";
 }
 $file .= "---\n";
 file_put_contents("BENCHMARK.md", $file);
