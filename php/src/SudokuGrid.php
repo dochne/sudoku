@@ -26,6 +26,15 @@ class SudokuGrid
         return $this->data[$row][$col];
     }
 
+    public function print()
+    {
+        $result = [];
+        foreach ($this->toArray() as $array) {
+            $result[] = implode(" ", array_map(function($v){return $v === null ? " " : $v;}, $array));
+        }
+        echo implode("\n", $result);
+    }
+
     public function isValid(int $row, int $col, int $value) : bool
     {
         // Rows first!
@@ -52,6 +61,7 @@ class SudokuGrid
                 }
             }
         }
+
         return true;
     }
 

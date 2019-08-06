@@ -21,11 +21,6 @@ impl Grid {
     }
 
     fn is_valid(&mut self, row: usize, col: usize, value: u8) -> bool {
-//        for (r_i, row) in self.cells.iter().enumerate() {
-//
-//        }
-
-
 //        println!("Attempting {} in {},{}", value, row, col);
 
 
@@ -48,37 +43,14 @@ impl Grid {
         let row_offset = row_from_i * 3;
         let col_offset = col_from_i * 3;
 
-        //println!("----");
-        //println!("{}", col_offset);
-//        assert!(row_modulo < 3);
-//        assert!(col_modulo < 3);
-//        assert!(row_offset < 7);
-//        assert!(col_offset < 7);
-
-        //assert!(row_from_i + r_i < 6);
-        //assert!(col_from_i + c_i < 6);
-
-//        println!("Row: {}, Row modulo: {}, Col: {}, Col modulo: {}", row, row_modulo, col, col_modulo);
-//        println!("Row offset: {}, Col offset: {}", row_offset, col_offset);
         for r_i in 0..3 {
             for c_i in 0..3 {
 
                 if self.cells[row_offset + r_i][col_offset + c_i] == value {
-//                    println!("Found {} in {}, {}", value, col_offset + c_i, row_offset + r_i);
-                    //println!("{} - {}, {} - {}, {}", row_offset, r_i, col_offset, c_i, value);
-                    //print("{} )
-                    // println!("{} {} {}, {} {} {}", row_from_i, r_i, row, col_from_i, c_i, col);
                     return false;
                 }
             }
         }
-        //println!("\n----");
-
-//        println!("{} {} {}, {} {} {}", row_from_i, r_i, row, col_from_i, c_i, col);
-//        println!("{} {}", self.cells[row_from_i + r_i][col_from_i + c_i], value);
-//        if self.cells[row_from_i + r_i][col_from_i + c_i] == value {
-//            return false;
-//        }
 
         true
     }
