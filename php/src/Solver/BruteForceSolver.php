@@ -15,6 +15,7 @@ class BruteForceSolver
                 }
 
                 for ($num = 1; $num <= 9; $num ++){
+                    $isValid = $grid->isValid($row, $col, $num);
                     if ($grid->isValid($row, $col, $num)) {
                         $grid->set($row, $col, $num);
                         $newGrid = $this->solve($grid);

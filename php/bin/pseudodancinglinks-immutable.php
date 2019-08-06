@@ -6,8 +6,4 @@ $grid = $loader->load($argv[1]);
 
 $microtime = microtime(true);
 $grid = $solver->solve($grid);
-$result = [];
-foreach ($grid->toArray() as $array) {
-    $result[] = implode(" ", $array);
-}
-echo implode("\n", $result);
+$grid->print();

@@ -1,8 +1,10 @@
 .idea
-vendor
+/vendor
+/php/vendor
 /cache
 /composer.lock
 /rust/bin
 /rust/target
 /typescript/node_modules
 /typescript/dist
+/venv
