@@ -4,7 +4,7 @@ namespace Dolondro\Sudoku\Solver;
 
 use Dolondro\Sudoku\SudokuGrid;
 
-class BruteForceSolver
+class BruteForceSolverImmutable
 {
     public function solve(SudokuGrid $grid) : ?SudokuGrid
     {
@@ -16,15 +16,13 @@ class BruteForceSolver
 
                 for ($num = 1; $num <= 9; $num ++){
                     if ($grid->isValid($row, $col, $num)) {
-                        $grid->set($row, $col, $num);
-                        $newGrid = $this->solve($grid);
+                        $newGrid = $this->solve($grid->withSet($row, $col, $num));
                         if (isset($newGrid)) {
                             return $newGrid;
                         }
                     }
                 }
 
-                $grid->set($row, $col, null);
                 return null;
             }
         }
