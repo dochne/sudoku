@@ -2,10 +2,13 @@
   "language": "php",
   "implementations": {
     "bruteforce": {
-      "run": "php bin/bruteforce.php"
+      "run": "php -n bin/bruteforce.php"
     },
-    "pseudo-dancinglinks": {
-      "run": "php bin/pseudodancinglinks.php"
+    "bruteforce-immutable": {
+      "run": "php -n bin/bruteforce-immutable.php"
+    },
+    "pseudo-dancinglinks-immutable": {
+      "run": "php -n bin/pseudodancinglinks-immutable.php"
     }
   }
 }

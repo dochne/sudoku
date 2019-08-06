@@ -77,7 +77,7 @@ class PseudoDancingLinkSolver
                     $cols[$col]->add($num);
                     $blocks[$row . $col]->add($num);
 
-                    $newGrid = $this->recursiveSolve($grid->set($row, $col, $num), $rows, $cols, $blocks);
+                    $newGrid = $this->recursiveSolve($grid->withSet($row, $col, $num), $rows, $cols, $blocks);
                     if (isset($newGrid)) {
                         return $newGrid;
                     }

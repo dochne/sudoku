@@ -55,12 +55,17 @@ class SudokuGrid
         return true;
     }
 
-    public function set(int $row, int $col, int $value) : SudokuGrid
+    public function withSet(int $row, int $col, int $value) : SudokuGrid
     {
         $newGrid = clone $this;
         // Using the really horrible bit about PHP here...
         $newGrid->data[$row][$col] = $value;
         return $newGrid;
+    }
+
+    public function set(int $row, int $col, ?int $value)
+    {
+        $this->data[$row][$col] = $value;
     }
 
     public function toArray()
