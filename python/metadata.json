@@ -3,6 +3,9 @@
   "implementations": {
     "bruteforce": {
       "run": "python3 main.py"
+    },
+    "pypy-bruteforce": {
+      "run": "pypy3 main.py"
     }
   }
 }
