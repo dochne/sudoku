@@ -32,11 +32,11 @@ class Grid:
 
         return True
 
-    def print(self):
+    def output(self):
         for row in self.cells:
             for col in self.cells[row]:
-                print(self.cells[row][col], "", end = '')
-            print("\n", end = '')
+                print(self.cells[row][col], "", end='')
+            print("\n", end='')
 
     def solve(self):
         for rowIndex in self.cells:
@@ -70,7 +70,6 @@ for row_i, row in enumerate(lines):
             pass
 
 if grid.solve():
-    grid.print()
+    grid.output()
 else:
-    grid.print()
     print("Unsolvable")
