@@ -12,7 +12,8 @@
 |php|andy-original-solver|7.370052|0.025745|0.02747|0.040411|29.386583|
 |python|bruteforce|8.826221|0.02989|0.041806|0.045659|35.187527|
 
-# Self Reported Benchmarks|Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|
+# Self Reported Benchmarks
+|Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|
 |---|---|---|---|---|---|---|
 |php|bruteforce-linked|0.673288|0.000443|0.00211|0.001573|2.689027|
 |php|pseudo-dancinglinks-immutable|2.35651|0.001473|0.004769|0.005532|9.414267|
