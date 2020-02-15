@@ -2,9 +2,21 @@
 include("vendor/autoload.php");
 chdir(__DIR__);
 
-$exampleInputFile = realpath(__DIR__ . "/examples/2_input.txt");
-$exampleOutputFile = realpath(__DIR__ . "/examples/2_output.txt");
-$exampleOutput = str_replace(["\n", " ", "\t"], "", file_get_contents($exampleOutputFile));
+//$exampleInputFile = realpath(__DIR__ . "/examples/3_input.txt");
+//$exampleOutputFile = realpath(__DIR__ . "/examples/3_output.txt");
+//$exampleOutput = str_replace(["\n", " ", "\t"], "", file_get_contents($exampleOutputFile));
+$examples = [];
+foreach (["1", "2", "3"] as $id) {
+    $inputFile = realpath(__DIR__ . "/examples/{$id}_input.txt");
+    $outputFile = realpath(__DIR__ . "/examples/{$id}_output.txt");
+
+    $examples[$id] = [
+        "input" => $inputFile,
+        //"outputFile" => $outputFile,
+        "output" => str_replace(["\n", " ", "\t"], "", file_get_contents($outputFile))
+    ];
+}
+
 
 $implementations = [];
 $directories = scandir(__DIR__);
@@ -22,6 +34,10 @@ foreach ($directories as $folder) {
 
         ["language" => $language, "implementations" => $languageImplementations] = $data;
         foreach ($languageImplementations as $implementationName => $implementationConfig) {
+            if (!($implementationConfig["enabled"] ?? true)) {
+                continue;
+            }
+
             $implementations[] = [
                 "language" => $language,
                 "folder" => $folder,
@@ -39,55 +55,93 @@ if ($noCache) {
 }
 echo "Running Benchmarks\n";
 foreach ($implementations as $index => ["language" => $language, "folder" => $folder, "name" => $name, "config" => $config]) {
-    echo "Running {$language}/{$name}\n";
-    $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $name);
 
-    if (!file_exists($cacheFilename) || $noCache) {
-        chdir($folder);
-        if (isset($config["build"])) {
-            echo "Running build step: {$config["build"]}\n";
-            exec($config["build"]);
+    foreach ($examples as $id => $example) {
+        echo "Running {$language}/{$name} Example {$id}\n";
+        $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $name) . "-{$id}";
+
+        if (!file_exists($cacheFilename) || $noCache) {
+            chdir($folder);
+            if (isset($config["build"])) {
+                echo "Running build step: {$config["build"]}\n";
+                exec($config["build"]);
+            }
+
+            $start = microtime(true);
+            $output = "";
+            $command = $config["run"]. " ". $example["input"];
+            echo "Running {$command}\n";
+            exec($command, $output);
+            $taken = microtime(true) - $start;
+            $result = implode("\n", $output);
+            $valid = ($example["output"] === str_replace(["\n", " ", "\t"], "", $result));
+
+            //$valid = true;
+            file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid], JSON_PRETTY_PRINT));
+            chdir(__DIR__);
         }
 
-        $start = microtime(true);
-        $output = "";
-        $command = $config["run"]. " ". $exampleInputFile;
-        echo "Running {$command}\n";
-        exec($command, $output);
-        $taken = microtime(true) - $start;
-        $result = implode("\n", $output);
-        $valid = ($exampleOutput === str_replace(["\n", " ", "\t"], "", $result));
-
-        file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid], JSON_PRETTY_PRINT));
-        chdir(__DIR__);
+        $implementations[$index]["result"][$id] = json_decode(file_get_contents($cacheFilename), true);
     }
+}
 
-    $implementations[$index]["result"] = json_decode(file_get_contents($cacheFilename), true);
+//print_r($implementations);
+foreach ($implementations as $id => $implementation) {
+    $valid = true;
+    $timings = [];
+    foreach ($implementation["result"] as $exampleName => $result) {
+        if (!$result["valid"]) {
+            $valid = false;
+        }
+        $timings[] = $result["time"];
+    }
+    $implementations[$id]["average-result"] = ["time" => array_sum($timings) / count($timings), "valid" => $valid];
 }
 
 // Order by fastest to slowest
 usort($implementations, function($arr1, $arr2) {
-    return $arr2["result"]["time"] < $arr1["result"]["time"];
+    return $arr2["average-result"]["time"] < $arr1["average-result"]["time"];
 });
 
-$includeResult = false;
+//$includeResult = false;
 
-$headers = ["Language", "ImplementationName", "Benchmark", "Valid"];
-if ($includeResult) {
-    $headers[] = "Result";
+$headers = ["Language", "ImplementationName"];
+$headers[] = "Average";
+foreach ($examples as $id => $example) {
+    $headers[] = "Example " . $id;
 }
+//
+//if ($includeResult) {
+//    $headers[] = "Result";
+//}
 $rows = [];
 foreach ($implementations as $implementation) {
     $row = [
         $implementation["language"],
         $implementation["name"],
-        round($implementation["result"]["time"], 6),
-        $implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
+        !$implementation["average-result"]["valid"] ? "\u{2718}" : round($implementation["average-result"]["time"], 6)
     ];
 
-    if ($includeResult) {
-        $row[] = "-----------------\n" . $implementation["result"]["result"];
+    foreach ($examples as $id => $example) {
+        $col = !$implementation["result"][$id]["valid"] ? "\u{2718}" : round($implementation["result"][$id]["time"], 6);
+//        $includeResult = true;
+//        if ($includeResult) {
+//            $col .= "\n" . $implementation["result"][$id]["result"];
+//        }
+
+        $row[] = $col;
     }
+
+//        $implementation["result"]["valid"] ?
+//        round($implementation["result"]["time"], 6),
+//        $implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
+//    ];
+
+    //$implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
+//
+//    if ($includeResult) {
+//        $row[] = "-----------------\n" . $implementation["result"]["result"];
+//    }
     $rows[] = $row;
 }
 

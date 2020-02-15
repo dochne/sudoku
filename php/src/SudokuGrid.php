@@ -10,6 +10,7 @@ namespace Dolondro\Sudoku;
 class SudokuGrid
 {
     protected $data = [];
+    public $moves = 0;
 
     public function __construct(array $data)
     {
@@ -30,7 +31,7 @@ class SudokuGrid
     {
         $result = [];
         foreach ($this->toArray() as $array) {
-            $result[] = implode(" ", array_map(function($v){return $v === null ? " " : $v;}, $array));
+            $result[] = implode("", array_map(function($v){return $v === null ? " " : $v;}, $array));
         }
         echo implode("\n", $result);
     }
@@ -67,6 +68,7 @@ class SudokuGrid
 
     public function withSet(int $row, int $col, int $value) : SudokuGrid
     {
+        $this->moves++;
         $newGrid = clone $this;
         // Using the really horrible bit about PHP here...
         $newGrid->data[$row][$col] = $value;
@@ -75,6 +77,7 @@ class SudokuGrid
 
     public function set(int $row, int $col, ?int $value)
     {
+        $this->moves++;
         $this->data[$row][$col] = $value;
     }
 
