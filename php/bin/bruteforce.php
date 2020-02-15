@@ -7,3 +7,6 @@ $grid = $loader->load($argv[1]);
 $microtime = microtime(true);
 $grid = $solver->solve($grid);
 $grid->print();
+
+echo "\n";
+//echo $grid->moves . "\n";

@@ -9,6 +9,12 @@
     },
     "pseudo-dancinglinks-immutable": {
       "run": "php -n bin/pseudodancinglinks-immutable.php"
+    },
+    "linked-immutable": {
+      "run": "php -n bin/bruteforce-linked.php"
+    },
+    "andy-tweeked": {
+      "run": "php -n bin/andy-solver.php"
     }
   }
 }
