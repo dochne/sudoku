@@ -207,6 +207,7 @@ foreach ($rows as $row) {
     $file .= "|" . implode("|", $row) . "|\n";
 }
 
+$file .= "\n";
 $file .= "# Self Reported Benchmarks";
 $file .= "|" . implode("|", $headers) . "|\n";
 $file .= "|" . implode("|", array_map(function($v) {return "---";}, $headers)) . "|\n";
