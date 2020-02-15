@@ -4,6 +4,12 @@ $solver = new \Dolondro\Sudoku\Solver\PseudoDancingLinkSolver();
 $loader = new \Dolondro\Sudoku\Loader\FileLoader();
 $grid = $loader->load($argv[1]);
 
-$microtime = microtime(true);
+$start = microtime(true);
 $grid = $solver->solve($grid);
-$grid->print();
+
+echo json_encode([
+    "time" => microtime(true) - $start,
+    "output" => $grid->print()
+]);
+
+

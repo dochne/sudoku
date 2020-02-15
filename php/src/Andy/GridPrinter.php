@@ -15,29 +15,25 @@ class GridPrinter
      *
      * @param Grid $grid
      */
-    public function printGrid(Grid $grid)
+    public function printGrid($grid)
     {
-        for ($y = 0; $y < 9; $y++) {
-
-//            if ($y % 3 === 0) {
-//                //echo "\n";
-//            }
-
-            for ($x = 0; $x < 9; $x++) {
-                echo $grid->grid[$x][$y];
-//                if ($x % 3 === 0) {
-//                    //echo "  ";
-//                }
-
-//                if ($grid->isEmpty($x, $y)) {
-//                    //echo "[ ]";
-//                } else {
-//                    //echo "[".$grid->getValue($x, $y)."]";
-//
-//                }
+        $str = "";
+        if ($grid instanceof \Andywaite\Sudoku\Grid) {
+            for ($y = 0; $y < 9; $y++) {
+                for ($x = 0; $x < 9; $x++) {
+                    $str .= $grid->getValue($x, $y);
+                }
+                $str .= "\n";
             }
-
-            echo "\n";
+            return $str;
         }
+
+        for ($y = 0; $y < 9; $y++) {
+            for ($x = 0; $x < 9; $x++) {
+                $str .= $grid->grid[$x][$y];
+            }
+            $str .= "\n";
+        }
+        return $str;
     }
 }

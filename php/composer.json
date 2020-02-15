@@ -9,9 +9,16 @@
         }
     ],
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.2",
+        "andywaite/sudoku-solver": "dev-master"
     },
     "autoload": {
         "psr-4": {"Dolondro\\Sudoku\\": "src/"}
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/andywaite/sudoku-solver"
+        }
+    ]
 }
