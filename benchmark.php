@@ -6,14 +6,16 @@ chdir(__DIR__);
 //$exampleOutputFile = realpath(__DIR__ . "/examples/3_output.txt");
 //$exampleOutput = str_replace(["\n", " ", "\t"], "", file_get_contents($exampleOutputFile));
 $examples = [];
-foreach (["1", "2", "3"] as $id) {
+foreach (["1", "2", "3", "4"] as $id) {
     $inputFile = realpath(__DIR__ . "/examples/{$id}_input.txt");
     $outputFile = realpath(__DIR__ . "/examples/{$id}_output.txt");
 
     $examples[$id] = [
         "input" => $inputFile,
         //"outputFile" => $outputFile,
-        "output" => str_replace(["\n", " ", "\t"], "", file_get_contents($outputFile))
+        "output" => file_exists($outputFile) ?
+            str_replace(["\n", " ", "\t"], "", file_get_contents($outputFile))
+            : null
     ];
 }
 
@@ -82,7 +84,10 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
                 $result = $decoded["output"];
             }
 
-            $valid = ($example["output"] === str_replace(["\n", " ", "\t"], "", $result));
+            $valid = true;
+            if ($example["output"] !== null) {
+                $valid = ($example["output"] === str_replace(["\n", " ", "\t"], "", $result));
+            }
 
             //$valid = true;
             file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid, "self-time" => $selfReportedTime], JSON_PRETTY_PRINT));
