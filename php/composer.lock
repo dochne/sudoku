@@ -4,12 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2bcd0f1b05a098a9fb7ac2039ed77d81",
-    "packages": [],
+    "content-hash": "1b14fa48301293f802d4d440c79c7f50",
+    "packages": [
+        {
+            "name": "andywaite/sudoku-solver",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/andywaite/sudoku-solver.git",
+                "reference": "6450a51150a5cc3abc5d94ab2fbe555bd02f4f2d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/andywaite/sudoku-solver/zipball/6450a51150a5cc3abc5d94ab2fbe555bd02f4f2d",
+                "reference": "6450a51150a5cc3abc5d94ab2fbe555bd02f4f2d",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Andywaite\\Sudoku\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Andrew Waite",
+                    "email": "andrewwaite@silktide.com"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/andywaite/sudoku-solver/tree/master",
+                "issues": "https://github.com/andywaite/sudoku-solver/issues"
+            },
+            "time": "2020-02-15T15:30:15+00:00"
+        }
+    ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "andywaite/sudoku-solver": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

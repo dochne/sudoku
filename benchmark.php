@@ -73,11 +73,19 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
             echo "Running {$command}\n";
             exec($command, $output);
             $taken = microtime(true) - $start;
+            $selfReportedTime = null;
+
             $result = implode("\n", $output);
+            if ($result[0] === "{") {
+                $decoded = json_decode($result, true);
+                $selfReportedTime = $decoded["time"];
+                $result = $decoded["output"];
+            }
+
             $valid = ($example["output"] === str_replace(["\n", " ", "\t"], "", $result));
 
             //$valid = true;
-            file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid], JSON_PRETTY_PRINT));
+            file_put_contents($cacheFilename, json_encode(["time" => $taken, "result" => $result, "valid" => $valid, "self-time" => $selfReportedTime], JSON_PRETTY_PRINT));
             chdir(__DIR__);
         }
 
@@ -89,13 +97,21 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
 foreach ($implementations as $id => $implementation) {
     $valid = true;
     $timings = [];
+    $selfTimings = [];
     foreach ($implementation["result"] as $exampleName => $result) {
         if (!$result["valid"]) {
             $valid = false;
         }
         $timings[] = $result["time"];
+        if (isset($result["self-time"])) {
+            $selfTimings[] = $result["self-time"];
+        }
     }
+
     $implementations[$id]["average-result"] = ["time" => array_sum($timings) / count($timings), "valid" => $valid];
+    if (count($selfTimings) > 0) {
+        $implementations[$id]["average-self-result"] = ["time" => array_sum($selfTimings) / count($selfTimings), "valid" => $valid];
+    }
 }
 
 // Order by fastest to slowest
@@ -115,21 +131,35 @@ foreach ($examples as $id => $example) {
 //    $headers[] = "Result";
 //}
 $rows = [];
+$selfReportedRows = [];
 foreach ($implementations as $implementation) {
     $row = [
         $implementation["language"],
-        $implementation["name"],
-        !$implementation["average-result"]["valid"] ? "\u{2718}" : round($implementation["average-result"]["time"], 6)
+        $implementation["name"]
     ];
+    $selfReportedRow = $row;
+    $selfReported = isset($implementation["result"][1]["self-time"]);
+
+    $row[] = !$implementation["average-result"]["valid"] ? "\u{2718}" : round($implementation["average-result"]["time"], 6);
+    if ($selfReported) {
+        $selfReportedRow[] = !$implementation["average-self-result"]["valid"] ? "\u{2718}" : round($implementation["average-self-result"]["time"], 6);
+    }
 
     foreach ($examples as $id => $example) {
         $col = !$implementation["result"][$id]["valid"] ? "\u{2718}" : round($implementation["result"][$id]["time"], 6);
+        $selfCol = !$implementation["result"][$id]["valid"] ? "\u{2718}" : round($implementation["result"][$id]["self-time"], 6);
+
 //        $includeResult = true;
 //        if ($includeResult) {
 //            $col .= "\n" . $implementation["result"][$id]["result"];
 //        }
 
+        $selfReportedRow[] = $selfCol;
         $row[] = $col;
+    }
+
+    if ($selfReported) {
+        $selfReportedRows[] = $selfReportedRow;
     }
 
 //        $implementation["result"]["valid"] ?
@@ -146,6 +176,7 @@ foreach ($implementations as $implementation) {
 }
 
 
+echo "Script reported times:\n";
 $output = new \Symfony\Component\Console\Output\StreamOutput(STDOUT);
 $table = new \Symfony\Component\Console\Helper\Table($output);
 $table->setHeaders($headers);
@@ -153,11 +184,30 @@ $table->addRows($rows);
 $table->render();
 echo "\n";
 
+usort($selfReportedRows, function($arr1, $arr2) {
+    return $arr2[2] < $arr1[2];
+});
+
+echo "Self-reported times:\n";
+$output = new \Symfony\Component\Console\Output\StreamOutput(STDOUT);
+$table = new \Symfony\Component\Console\Helper\Table($output);
+$table->setHeaders($headers);
+$table->addRows($selfReportedRows);
+$table->render();
+
 $file = "# Benchmarks\n";
 $file .= "|" . implode("|", $headers) . "|\n";
 $file .= "|" . implode("|", array_map(function($v) {return "---";}, $headers)) . "|\n";
 foreach ($rows as $row) {
     $file .= "|" . implode("|", $row) . "|\n";
 }
+
+$file .= "# Self Reported Benchmarks";
+$file .= "|" . implode("|", $headers) . "|\n";
+$file .= "|" . implode("|", array_map(function($v) {return "---";}, $headers)) . "|\n";
+foreach ($selfReportedRows as $row) {
+    $file .= "|" . implode("|", $row) . "|\n";
+}
+
 file_put_contents("benchmark.md", $file);
 

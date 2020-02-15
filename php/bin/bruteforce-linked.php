@@ -94,77 +94,78 @@ class Grid {
 
     public function output()
     {
+        $str = "";
         foreach ($this->cells as $i => $value) {
-            echo $value;
+            $str .= $value;
             if (($i + 1) % 9 === 0) {
-                echo "\n";
+                $str .= "\n";
             }
         }
+        return $str;
     }
 }
 
 $grid = new Grid($cells, $cellLinks, $links);
 
-function solve(Grid $grid) {
+/**
+ * @param Grid $grid
+ * @return |null
+ */
+function solve($grid) {
     if ($grid->pos === 81) {
         return $grid;
     }
 
     if ($grid->cells[$grid->pos] !== null) {
-        $newGrid = clone $grid;
-        $newGrid->pos++;
-        $response = solve($newGrid);
-        if ($response) {
+        $grid->pos++;
+        if ($response = solve($grid)) {
+            return $grid;
+        } else {
+            $grid->pos--;
             return $response;
         }
-    } else {
-        //$clinks = $grid->cellLinks[$grid->pos];
 
-//        if (
-//            count($grid->links[$grid->cellLinks[$grid->pos][0]]) === 0 ||
-//            count($grid->links[$grid->cellLinks[$grid->pos][1]]) === 0 ||
-//            count($grid->links[$grid->cellLinks[$grid->pos][2]]) === 0
-//        ) {
-//            return null;
-//        }
+    } else {
+        $l1 = $grid->cellLinks[$grid->pos][0];
+        $l2 = $grid->cellLinks[$grid->pos][1];
+        $l3 = $grid->cellLinks[$grid->pos][2];
 
         $possibleNumbers = array_intersect(
-            array_keys($grid->links[$grid->cellLinks[$grid->pos][0]]),
-            array_keys($grid->links[$grid->cellLinks[$grid->pos][1]]),
-            array_keys($grid->links[$grid->cellLinks[$grid->pos][2]])
+            array_keys($grid->links[$l1]),
+            array_keys($grid->links[$l2]),
+            array_keys($grid->links[$l3])
         );
 
+
         foreach ($possibleNumbers as $number) {
-            $newGrid = clone $grid;
-            if ($number == 0) {
-                echo "foo\n";
-            }
-            $newGrid->cells[$grid->pos] = $number;
-            unset(
-                $newGrid->links[$grid->cellLinks[$grid->pos][0]][$number],
-                $newGrid->links[$grid->cellLinks[$grid->pos][1]][$number],
-                $newGrid->links[$grid->cellLinks[$grid->pos][2]][$number]
-            );
-            $newGrid->pos++;
-            $response = solve($newGrid);
+            //$newGrid = clone $grid;
+            $grid->cells[$grid->pos] = $number;
+            unset($grid->links[$l1][$number], $grid->links[$l2][$number], $grid->links[$l3][$number]);
+            $grid->pos++;
+
+
+            $response = solve($grid);
             if ($response) {
                 return $response;
             }
+
+            $grid->pos--;
+            $grid->cells[$grid->pos] = null;
+            $grid->links[$l1][$number] = 1;
+            $grid->links[$l2][$number] = 1;
+            $grid->links[$l3][$number] = 1;
         }
     }
-
-//    array_intersect(
-//        array_keys($grid->cellLinks[$grid->pos][0]), array_keys($grid->cellLinks[$grid->pos][1]), array_keys($grid->cellLinks[$grid->pos][2])) as $num) {
-
-//    if (!is_array($grid->links[$grid->cellLinks[$grid->pos][2]])) {
-//        echo "foo\n";
-//    }
-
 
     return null;
 }
 
-$grid = solve($grid);
-$grid->output();
+$start = microtime(true);
+solve($grid);
+//echo "Time:" . microtime(true) - $start . "\n";
 
-//echo microtime(true) - $start . "\n";
+echo json_encode([
+    "time" => microtime(true) - $start,
+    "output" => $grid->output()
+]);
+

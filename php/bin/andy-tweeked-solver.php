@@ -41,13 +41,20 @@ try {
 } catch (Exception $e) {
     //echo "\n\nFailed to solve: ".$e->getMessage();
 }
-
-// Calculate timings
-$end = microtime(true);
-$runTime = ($end - $start);
+//
+//// Calculate timings
+//$end = microtime(true);
+//
+//echo $runTime . "\n";
 
 // Show the completed grid
-$printer->printGrid($grid);
+
+echo json_encode([
+    "time" => microtime(true) - $start,
+    "output" => $printer->printGrid($grid)
+]);
+
+
 
 // Show some stats
 //echo "\nMoves: ".$grid->getMoves();

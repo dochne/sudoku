@@ -33,7 +33,7 @@ class SudokuGrid
         foreach ($this->toArray() as $array) {
             $result[] = implode("", array_map(function($v){return $v === null ? " " : $v;}, $array));
         }
-        echo implode("\n", $result);
+        return implode("\n", $result);
     }
 
     public function isValid(int $row, int $col, int $value) : bool
