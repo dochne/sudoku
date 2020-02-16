@@ -13,6 +13,12 @@
     "bruteforce-linked": {
       "run": "php -n bin/bruteforce-linked.php"
     },
+    "bruteforce-linked-flexible-start": {
+      "run": "php -n bin/bruteforce-linked-flexible-start.php"
+    },
+    "bruteforce-linked-flexible-distribution": {
+      "run": "php -n bin/bruteforce-linked-flexible-distribution.php"
+    },
     "andy-tweeked-solver": {
       "run": "php -n bin/andy-tweeked-solver.php"
     },
