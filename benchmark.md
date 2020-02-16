@@ -1,23 +1,27 @@
 # Benchmarks
 |Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|
 |---|---|---|---|---|---|---|
-|rust|bruteforce|0.056699|0.003836|0.003972|0.003645|0.215345|
-|go|bruteforce|0.184746|0.019125|0.020495|0.005343|0.694021|
-|typescript|bruteforce|0.226377|0.045097|0.046073|0.051597|0.762742|
-|php|bruteforce-linked|0.697451|0.023596|0.025254|0.026911|2.714043|
-|php|pseudo-dancinglinks-immutable|2.380373|0.024427|0.027784|0.02844|9.440843|
-|php|bruteforce|3.203855|0.025463|0.028007|0.032007|12.729941|
-|php|bruteforce-immutable|3.264961|0.027673|0.034394|0.034363|12.963412|
-|php|andy-tweeked-solver|4.766969|0.025623|0.027096|0.037154|18.978003|
-|php|andy-original-solver|7.370052|0.025745|0.02747|0.040411|29.386583|
-|python|bruteforce|8.826221|0.02989|0.041806|0.045659|35.187527|
+|rust|bruteforce|0.067526|0.005329|0.004424|0.004452|0.255897|
+|php|bruteforce-linked-flexible-start|0.202548|0.022802|0.029914|0.262217|0.49526|
+|go|bruteforce|0.210376|0.018685|0.00486|0.005441|0.812517|
+|typescript|bruteforce|0.27247|0.060725|0.049339|0.051713|0.928104|
+|php|bruteforce-linked-flexible-distribution|0.640541|0.025413|0.024649|0.023732|2.488372|
+|php|bruteforce-linked|0.748652|0.02776|0.028684|0.026914|2.911251|
+|php|pseudo-dancinglinks-immutable|2.493747|0.027219|0.030556|0.03306|9.884152|
+|php|bruteforce-immutable|3.411819|0.025525|0.032428|0.0348|13.554522|
+|php|bruteforce|3.850009|0.029885|0.035175|0.038537|15.296438|
+|php|andy-tweeked-solver|4.951218|0.025754|0.025049|0.039167|19.7149|
+|php|andy-original-solver|8.605999|0.025029|0.027297|0.041699|34.329969|
+|python|bruteforce|9.437738|0.031853|0.041634|0.045001|37.632465|
 
 # Self Reported Benchmarks
 |Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|
 |---|---|---|---|---|---|---|
-|php|bruteforce-linked|0.673288|0.000443|0.00211|0.001573|2.689027|
-|php|pseudo-dancinglinks-immutable|2.35651|0.001473|0.004769|0.005532|9.414267|
-|php|bruteforce|3.180912|0.001966|0.006368|0.008758|12.706555|
-|php|bruteforce-immutable|3.240369|0.003978|0.007505|0.008946|12.941048|
-|php|andy-tweeked-solver|4.741824|0.002426|0.002893|0.014295|18.947681|
-|php|andy-original-solver|7.346348|0.002407|0.004228|0.018117|29.360638|
+|php|bruteforce-linked-flexible-start|0.180234|0.000478|0.007501|0.239592|0.473366|
+|php|bruteforce-linked-flexible-distribution|0.616711|0.000499|0.002204|0.000613|2.463529|
+|php|bruteforce-linked|0.722527|0.000571|0.0028|0.001586|2.88515|
+|php|pseudo-dancinglinks-immutable|2.468291|0.001928|0.005032|0.006901|9.859301|
+|php|bruteforce-immutable|3.387014|0.002215|0.00738|0.009211|13.529249|
+|php|bruteforce|3.821971|0.002451|0.007336|0.00979|15.268309|
+|php|andy-tweeked-solver|4.928194|0.002377|0.002823|0.015819|19.691755|
+|php|andy-original-solver|8.582692|0.002583|0.004632|0.019001|34.304551|
