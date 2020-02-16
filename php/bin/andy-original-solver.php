@@ -49,5 +49,5 @@ try {
 echo json_encode([
     "time" => microtime(true) - $start,
     "output" => $printer->printGrid($grid)
-]);
+], JSON_PRETTY_PRINT);
 

@@ -166,6 +166,7 @@ solve($grid);
 
 echo json_encode([
     "time" => microtime(true) - $start,
-    "output" => $grid->output()
-]);
+    "output" => $grid->output(),
+    "iterations" => $grid->iterations
+], JSON_PRETTY_PRINT);
 
