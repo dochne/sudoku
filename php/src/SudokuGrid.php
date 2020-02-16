@@ -11,6 +11,7 @@ class SudokuGrid
 {
     protected $data = [];
     public $moves = 0;
+    public $iterations = 0;
 
     public function __construct(array $data)
     {

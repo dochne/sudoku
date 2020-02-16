@@ -8,6 +8,7 @@ class BruteForceSolver
 {
     public function solve(SudokuGrid $grid) : ?SudokuGrid
     {
+        $grid->iterations++;
         for ($row = 0; $row < 9; $row++) {
             for ($col = 0; $col < 9; $col++) {
                 if ($grid->hasNumber($row, $col)) {

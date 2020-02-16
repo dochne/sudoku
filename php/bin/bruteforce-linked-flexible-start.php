@@ -85,6 +85,7 @@ class Grid {
     public $links;
     public $pos = 0;
     public $endPos = 81;
+    public $iterations = 0;
 
     public function __construct(array $cells, array $cellLinks, array $links)
     {
@@ -142,6 +143,7 @@ $grid->endPos = $bestRunId + 81;
  * @return |null
  */
 function solve($grid) {
+    $grid->iterations++;
     if ($grid->pos === $grid->endPos) {
         return $grid;
     }
@@ -162,6 +164,7 @@ function solve($grid) {
         $l1 = $grid->cellLinks[$pos][0];
         $l2 = $grid->cellLinks[$pos][1];
         $l3 = $grid->cellLinks[$pos][2];
+
 
         $possibleNumbers = array_intersect(
             array_keys($grid->links[$l1]),
@@ -199,6 +202,7 @@ solve($grid);
 
 echo json_encode([
     "time" => microtime(true) - $start,
-    "output" => $grid->output()
-]);
+    "output" => $grid->output(),
+    "iterations" => $grid->iterations
+], JSON_PRETTY_PRINT);
 

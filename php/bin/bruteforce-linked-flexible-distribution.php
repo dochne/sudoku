@@ -26,7 +26,7 @@ foreach ($rows as $row) {
 
 // Step 2, build a set of links for rows, cols and "blocks"
 $baseArray = [];
-for ($x=1; $x<=9; $x++) {
+for ($x=1; $x<=9; ++$x) {
     $baseArray[$x] = true;
 }
 
@@ -36,6 +36,7 @@ const BLOCK_LINK_OFFSET = 18;
 
 $links = array_pad([], 27, $baseArray);
 $cellLinks = [];
+$linksToCells = [];
 foreach ($cells as $id => $cell) {
     // RowId
     $rowId = (int)floor($id / 9);
@@ -62,6 +63,8 @@ foreach ($cells as $id => $cell) {
         COL_LINK_OFFSET + $colId,
         BLOCK_LINK_OFFSET + $blockId
     ];
+
+    $linksToCells[ROW_LINK_OFFSET + $rowId][] = $id;
 }
 
 
@@ -86,6 +89,7 @@ class Grid {
 //    public $pos = 0;
 //    public $endPos = 81;
     public $emptyCells = [];
+    public $iterations = 0;
 
     public function __construct(array $cells, array $cellLinks, array $links)
     {
@@ -145,88 +149,79 @@ $grid = new Grid($cells, $cellLinks, $links);
 
 /**
  * @param Grid $grid
+ * @param array $cacheArray
  * @return |null
  */
 function solve($grid) {
-    //echo count($grid->emptyCells) . "\n";
+    ++$grid->iterations;
     if (count($grid->emptyCells) === 0) {
         return $grid;
     }
 
-    //$pos = $grid->pos % 81;
-    //$pos = array_rand($grid->emptyCells);
-    $lowestLinkTotal = INF;
-    $lowestLinkId = null;
-//    array_key_first($grid->emptyCells);
+    $lowestLinkTotal = 10;
+
     foreach ($grid->emptyCells as $id => $cell) {
+//        $intersectValues = [];
+//        foreach ($grid->cellLinks[$id] as $linkId) {
+//            $intersectValues[] = array_keys($grid->links[$linkId]);
+//        }
         $l1 = $grid->cellLinks[$id][0];
         $l2 = $grid->cellLinks[$id][1];
         $l3 = $grid->cellLinks[$id][2];
 
-        $n = count(array_intersect(
-            array_keys($grid->links[$l1]),
-            array_keys($grid->links[$l2]),
-            array_keys($grid->links[$l3])
-        ));
-//
-//        $n = count($grid->links[$l1]) +
-//            count($grid->links[$l2]) +
-//            count($grid->links[$l3]);
-
-        if ($n < $lowestLinkTotal) {
-            $lowestLinkTotal = $n;
-            $lowestLinkId = $id;
-            if ($n === 1) {
-                break;
-            }
-        }
-    }
-
-    $pos = $lowestLinkId;
-
-    //echo $pos . "\n";
-    if ($grid->cells[$pos] !== null) {
-        exit("=");
-        $grid->pos++;
-        if ($response = solve($grid)) {
-            return $grid;
-        } else {
-            $grid->pos--;
-            return $response;
-        }
-
-    } else {
-        $l1 = $grid->cellLinks[$pos][0];
-        $l2 = $grid->cellLinks[$pos][1];
-        $l3 = $grid->cellLinks[$pos][2];
-
-        $possibleNumbers = array_intersect(
+//         We could cache/invalidate this somewhere
+        $intersect = array_intersect(
             array_keys($grid->links[$l1]),
             array_keys($grid->links[$l2]),
             array_keys($grid->links[$l3])
         );
+//        $intersect = array_intersect(...$intersectValues);
 
+        $countIntersect = count($intersect);
 
-        foreach ($possibleNumbers as $number) {
-            //$newGrid = clone $grid;
-            $grid->cells[$pos] = $number;
-            unset($grid->links[$l1][$number], $grid->links[$l2][$number], $grid->links[$l3][$number]);
-            //$grid->pos++;
-
-
-            unset($grid->emptyCells[$pos]);
-            $response = solve($grid);
-            if ($response) {
-                return $response;
+        if ($countIntersect < $lowestLinkTotal) {
+            $pos = $id;
+            $possibleNumbers = $intersect;
+            if ($countIntersect <= 1) {
+                break;
             }
-            $grid->emptyCells[$pos] = true;
-            //$grid->pos--;
-            $grid->cells[$pos] = null;
-            $grid->links[$l1][$number] = 1;
-            $grid->links[$l2][$number] = 1;
-            $grid->links[$l3][$number] = 1;
+            $lowestLinkTotal = $countIntersect;
+
         }
     }
+
+//
+    $l1 = $grid->cellLinks[$pos][0];
+    $l2 = $grid->cellLinks[$pos][1];
+    $l3 = $grid->cellLinks[$pos][2];
+
+//    $possibleNumbers = array_intersect(
+//        array_keys($grid->links[$l1]),
+//        array_keys($grid->links[$l2]),
+//        array_keys($grid->links[$l3])
+//    );
+
+    if (count($possibleNumbers) === 0) {
+        return null;
+    }
+
+    // Todo: Work out why this unset can cause everything to be shit
+    unset($grid->emptyCells[$pos]);
+    foreach ($possibleNumbers as $number) {
+        $grid->cells[$pos] = $number;
+
+        unset($grid->links[$l1][$number], $grid->links[$l2][$number], $grid->links[$l3][$number]);
+        $response = solve($grid);
+        if ($response) {
+            return $response;
+        }
+
+        $grid->links[$l1][$number] = 1;
+        $grid->links[$l2][$number] = 1;
+        $grid->links[$l3][$number] = 1;
+    }
+    $grid->cells[$pos] = null;
+    $grid->emptyCells[$pos] = true;
 
     return null;
 }
@@ -237,6 +232,7 @@ solve($grid);
 
 echo json_encode([
     "time" => microtime(true) - $start,
-    "output" => $grid->output()
-]);
+    "output" => $grid->output(),
+    "iterations" => $grid->iterations
+], JSON_PRETTY_PRINT);
 
