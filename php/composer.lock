@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/andywaite/sudoku-solver.git",
-                "reference": "4d7663b8e40de0247c05494b513ad5ae96857792"
+                "reference": "8b54266f36a73b9fedeaa39fbf5e667075c5c624"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/andywaite/sudoku-solver/zipball/4d7663b8e40de0247c05494b513ad5ae96857792",
-                "reference": "4d7663b8e40de0247c05494b513ad5ae96857792",
+                "url": "https://api.github.com/repos/andywaite/sudoku-solver/zipball/8b54266f36a73b9fedeaa39fbf5e667075c5c624",
+                "reference": "8b54266f36a73b9fedeaa39fbf5e667075c5c624",
                 "shasum": ""
             },
             "require": {
@@ -42,7 +42,7 @@
                 "source": "https://github.com/andywaite/sudoku-solver/tree/master",
                 "issues": "https://github.com/andywaite/sudoku-solver/issues"
             },
-            "time": "2020-02-16T12:50:42+00:00"
+            "time": "2020-02-16T22:58:27+00:00"
         }
     ],
     "packages-dev": [],

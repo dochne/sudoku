@@ -19,11 +19,17 @@
     "bruteforce-linked-flexible-distribution": {
       "run": "php -n bin/bruteforce-linked-flexible-distribution.php"
     },
+    "bruteforce-linked-flexible-distribution-pcntl": {
+      "run": "php -n bin/bruteforce-linked-flexible-distribution-pcntl.php"
+    },
     "andy-tweeked-solver": {
       "run": "php -n bin/andy-tweeked-solver.php"
     },
-    "andy-original-solver": {
-      "run": "php -n bin/andy-original-solver.php"
+    "andy-recursive-solver": {
+      "run": "php -n bin/andy-recursive-solver.php"
+    },
+    "andy-recursive-solver-with-optimisation": {
+      "run": "php -n bin/andy-recursive-solver-with-optimisation.php"
     }
   }
 }

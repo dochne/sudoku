@@ -10,7 +10,9 @@ include(__DIR__ . "/../vendor/autoload.php");
 
 $grid = new \Andywaite\Sudoku\Grid();
 $printer = new \Dolondro\Sudoku\Andy\GridPrinter();
-$solver = new \Andywaite\Sudoku\Solver(new \Andywaite\Sudoku\CellChecker());
+//$solver = //new \Andywaite\Sudoku\Solver(new \Andywaite\Sudoku\CellChecker());
+$solver = new \Andywaite\Sudoku\RecursiveSolverWithOptimisation(new \Andywaite\Sudoku\CellChecker());
+
 
 // we're expecting props to be a filename
 $contents = file_get_contents($argv[1]);

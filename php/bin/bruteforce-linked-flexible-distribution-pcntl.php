@@ -226,14 +226,78 @@ function solve($grid) {
     return null;
 }
 
+$id = array_keys($grid->emptyCells)[0];
+
+// So, new idea
+// Multithread this in the laziest fashion possible... forks!
+$l1 = $grid->cellLinks[$id][0];
+$l2 = $grid->cellLinks[$id][1];
+$l3 = $grid->cellLinks[$id][2];
+
+//         We could cache/invalidate this somewhere
+$intersect = array_intersect(
+    array_keys($grid->links[$l1]),
+    array_keys($grid->links[$l2]),
+    array_keys($grid->links[$l3])
+);
+
 $start = microtime(true);
 
-solve($grid);
+//print_r($intersect);
+//exit(0);
+
+
+$monitor = shmop_open(ftok(__FILE__, chr(0)), "c", 0644, 100);
+shmop_delete($monitor);
+$monitor = shmop_open(ftok(__FILE__, chr(0)), "c", 0644, 100);
+
+$pids = [];
+unset($grid->emptyCells[$id]);
+$n = 0;
+foreach ($intersect as $number) {
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+        die("fork failure");
+    } elseif ($pid === 0) {
+        $grid->cells[$id] = $number;
+        unset($grid->links[$l1][$number], $grid->links[$l2][$number], $grid->links[$l3][$number]);
+
+        $response = solve($grid);
+        if ($response !== null) {
+            shmop_write($monitor, $grid->output(), 0);
+        }
+        exit(0);
+    }
+    $pids[$pid] = true;
+}
+
+while (count($pids) > 0 && ($changedPid = pcntl_waitpid(0, $status)) != -1) {
+    unset($pids[$changedPid]);
+    if (($content = trim(shmop_read($monitor, 0, 100))) !== "") {
+        echo json_encode([
+            "time" => microtime(true) - $start,
+            "output" => $content,
+            "iterations" => $grid->iterations
+        ], JSON_PRETTY_PRINT);
+
+        foreach ($pids as $pid => $_) {
+            posix_kill($pid, 9);
+            //pcntl_s($pid, 9);
+        }
+        exit(0);
+    }
+//    var_dump($changedPid);
+//    exit(0);
+}
+
+exit("Failed");
+
+//solve($grid);
 //echo "Time:" . microtime(true) - $start . "\n";
 
 echo json_encode([
     "time" => microtime(true) - $start,
-    "output" => $grid->output(),
+    "output" => $output,
     "iterations" => $grid->iterations
 ], JSON_PRETTY_PRINT);
 

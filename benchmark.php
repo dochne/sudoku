@@ -6,7 +6,7 @@ chdir(__DIR__);
 //$exampleOutputFile = realpath(__DIR__ . "/examples/3_output.txt");
 //$exampleOutput = str_replace(["\n", " ", "\t"], "", file_get_contents($exampleOutputFile));
 $examples = [];
-foreach (["1", "2", "3", "4"] as $id) {
+foreach (["1", "2", "3", "4", "5"] as $id) {
     $inputFile = realpath(__DIR__ . "/examples/{$id}_input.txt");
     $outputFile = realpath(__DIR__ . "/examples/{$id}_output.txt");
 
