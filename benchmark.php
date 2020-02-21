@@ -58,12 +58,16 @@ if ($noCache) {
 echo "Running Benchmarks\n";
 foreach ($implementations as $index => ["language" => $language, "folder" => $folder, "name" => $name, "config" => $config]) {
 
+
     foreach ($examples as $id => $example) {
         echo "Running {$language}/{$name} Example {$id}\n";
         $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $name) . "-{$id}";
 
         if (!file_exists($cacheFilename) || $noCache) {
             chdir($folder);
+            if (isset($config["dir"])) {
+                chdir($config["dir"]);
+            }
             if (isset($config["build"])) {
                 echo "Running build step: {$config["build"]}\n";
                 exec($config["build"]);

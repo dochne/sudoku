@@ -69,8 +69,7 @@ foreach ($cells as $id => $cell) {
     $n2 = floor($colId / 3);
     $blockId = (int)((3 * $n1) + $n2);
 
-    //$cellLinks[$id] = [
-    $cellLinks[] = [
+    $cellLinks[$id] = [
         ROW_LINK_OFFSET + $rowId,
         COL_LINK_OFFSET + $colId,
         BLOCK_LINK_OFFSET + $blockId
@@ -239,7 +238,96 @@ function solve($grid) {
 
 $grid = new Grid($cells, $cellLinks, $links);
 $start = microtime(true);
+
+$lowestLinkTotal = 10;
+foreach ($grid->emptyCells as $id => $cell) {
+    $l1 = $grid->cellLinks[$id][0];
+    $l2 = $grid->cellLinks[$id][1];
+    $l3 = $grid->cellLinks[$id][2];
+
+    $key = $grid->links[$l1] & $grid->links[$l2] & $grid->links[$l3];
+    $countIntersect = $totalMap[$key];
+
+    if ($countIntersect < $lowestLinkTotal) {
+        $pos = $id;
+        $posKey = $key;
+
+        if ($countIntersect === 1) {
+            break;
+        }
+
+        if ($countIntersect === 0) {
+            return null;
+        }
+
+        $lowestLinkTotal = $countIntersect;
+    }
+}
+
+$possibleNumbers = $possibleNumberMap[$posKey];
+
+
+$monitor = shmop_open(ftok(__FILE__, chr(0)), "c", 0644, 100);
+shmop_delete($monitor);
+$monitor = shmop_open(ftok(__FILE__, chr(0)), "c", 0644, 100);
+
+$pids = [];
+unset($grid->emptyCells[$pos]);
+$n = 0;
+//var_dump($possibleNumbers);
+foreach ($possibleNumbers as $number) {
+    $pid = pcntl_fork();
+//    $pid = 0;
+    if ($pid === -1) {
+        die("fork failure");
+    } elseif ($pid === 0) {
+        $l1 = $grid->cellLinks[$pos][0];
+        $l2 = $grid->cellLinks[$pos][1];
+        $l3 = $grid->cellLinks[$pos][2];
+
+        $grid->cells[$pos] = $number;
+        $grid->links[$l1] = $grid->links[$l1] ^ $number;
+        $grid->links[$l2] = $grid->links[$l2] ^ $number;
+        $grid->links[$l3] = $grid->links[$l3] ^ $number;
+
+        $response = solve($grid);
+        if ($response !== null) {
+            foreach ($grid->cells as $k => $value) {
+                $grid->cells[$k] = fromBinary($value);
+            }
+            shmop_write($monitor, $grid->output(), 0);
+        }
+        exit(0);
+    }
+    $pids[$pid] = true;
+}
+
+while (count($pids) > 0 && ($changedPid = pcntl_waitpid(0, $status)) != -1) {
+    unset($pids[$changedPid]);
+    if (($content = trim(shmop_read($monitor, 0, 100))) !== "") {
+        echo json_encode([
+            "time" => microtime(true) - $start,
+            "output" => $content,
+            "iterations" => $grid->iterations
+        ], JSON_PRETTY_PRINT);
+
+        foreach ($pids as $pid => $_) {
+            posix_kill($pid, 9);
+            //pcntl_s($pid, 9);
+        }
+        exit(0);
+    }
+//    var_dump($changedPid);
+//    exit(0);
+}
+
+exit("Failed");
+
+
 solve($grid);
+
+
+
 
 foreach ($grid->cells as $k => $value) {
     $grid->cells[$k] = fromBinary($value);

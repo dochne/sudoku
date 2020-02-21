@@ -1,7 +1,13 @@
 {
   "language": "rust",
   "implementations": {
-    "bruteforce": {
+    "basic": {
+      "dir": "basic",
+      "build": "cargo build --release --target-dir bin",
+      "run": "bin/release/sudoku"
+    },
+    "optimised": {
+      "dir": "optimised",
       "build": "cargo build --release --target-dir bin",
       "run": "bin/release/sudoku"
     }

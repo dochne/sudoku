@@ -10,7 +10,8 @@
     ],
     "require": {
         "php": ">=7.2",
-        "andywaite/sudoku-solver": "dev-master"
+        "andywaite/sudoku-solver": "dev-master",
+        "php-ds/php-ds": "^1.2"
     },
     "autoload": {
         "psr-4": {"Dolondro\\Sudoku\\": "src/"}

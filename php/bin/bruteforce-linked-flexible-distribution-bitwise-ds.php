@@ -46,8 +46,14 @@ const COL_LINK_OFFSET = 9;
 const BLOCK_LINK_OFFSET = 18;
 
 $links = array_pad([], 27, 511);
-$cellLinks = [];
-$linksToCells = [];
+/*$links = new \Ds\Vector();
+for ($x=0; $x<27; $x++){
+    $links->push(511);
+}*/
+
+//exit(0);
+$cellLinks = new \Ds\Vector();
+$linksToCells = new \Ds\Map();
 foreach ($cells as $id => $cell) {
     // RowId
     $rowId = (int)floor($id / 9);
@@ -69,14 +75,16 @@ foreach ($cells as $id => $cell) {
     $n2 = floor($colId / 3);
     $blockId = (int)((3 * $n1) + $n2);
 
-    //$cellLinks[$id] = [
     $cellLinks[] = [
         ROW_LINK_OFFSET + $rowId,
         COL_LINK_OFFSET + $colId,
         BLOCK_LINK_OFFSET + $blockId
     ];
 
-    $linksToCells[ROW_LINK_OFFSET + $rowId][] = $id;
+    if (!isset($linksToCells[ROW_LINK_OFFSET + $rowId])) {
+        $linksToCells[ROW_LINK_OFFSET + $rowId] = new \Ds\Vector();
+    }
+    $linksToCells[ROW_LINK_OFFSET + $rowId][] = [];
 }
 
 
@@ -104,7 +112,7 @@ class Grid {
     public $emptyCells = [];
     public $iterations = 0;
 
-    public function __construct(array $cells, array $cellLinks, array $links)
+    public function __construct($cells, $cellLinks, $links)
     {
         $this->cells = $cells;
         $this->cellLinks = $cellLinks;
@@ -131,7 +139,7 @@ class Grid {
 
 
 global $map;
-$map = [];
+$map = new \Ds\Map();
 for ($x=1; $x<=9; $x++) {
     $map[$x] = toBinary($x);
 //    $b = toBinary($x);
@@ -142,14 +150,14 @@ for ($x=1; $x<=9; $x++) {
 
 global $totalMap;
 global $possibleNumberMap;
-$totalMap = [];
+$totalMap = new \Ds\Map();
 
 for ($x=0; $x<=511; $x++){
     $totalMap[$x] = array_sum(str_split(decbin($x)));
 }
 
 
-$possibleNumberMap = [];
+$possibleNumberMap = new \Ds\Map();
 for ($x=0; $x<511; $x++) {
     $possibleNumbers = [];
     for ($v=1; $v<=9; $v++) {

@@ -17,7 +17,7 @@ The rust lang book is pretty comprehensive:
 - https://doc.rust-lang.org/book/
 
 There's also a fantastic unofficial tutorial that gives a good overview of the problems you may come across when trying
-to do the most compilcated of tasks, building a linked list. Excellent resource
+to do the most complicated of tasks, building a linked list. Excellent resource
 - https://rust-unofficial.github.io/too-many-lists/index.html
 
 
