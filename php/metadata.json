@@ -25,6 +25,9 @@
     "bruteforce-linked-flexible-distribution-bitwise": {
       "run": "php -n bin/bruteforce-linked-flexible-distribution-bitwise.php"
     },
+    "bitwise-pcntl": {
+      "run": "php -n bin/bitwise-pcntl.php"
+    },
     "bruteforce-linked-flexible-distribution-pcntl": {
       "run": "php -n bin/bruteforce-linked-flexible-distribution-pcntl.php"
     },
