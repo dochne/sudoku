@@ -87,7 +87,6 @@ class Grid {
     public $cellLinks;
     public $links;
     public $stack = [];
-    public $grabStack = [];
 //    public $pos = 0;
 //    public $endPos = 81;
     public $emptyCells = [];
@@ -222,11 +221,18 @@ function solve($grid) {
         $number = $possibleNumbers[$i];
 
         $grid->stack[] = [
-            $number,
-            $possibleNumbers,
             $i,
-            [$l1, $l2, $l3],
-            $pos
+            $possibleNumbers,
+            $grid->links,
+            $pos,
+            [$l1, $l2, $l3]
+//            $grid->cells
+
+//            $number,
+//            $possibleNumbers,
+//            $i,
+//            [$l1, $l2, $l3],
+//            $pos
         ];
 
         $grid->cells[$pos] = $number;
@@ -235,16 +241,24 @@ function solve($grid) {
         reset:
 
         $popped = array_pop($grid->stack);
-        $l1 = $popped[3][0];
-        $l2 = $popped[3][1];
-        $l3 = $popped[3][2];
-
-        $grid->links[$l1][$popped[0]] = 1;
-        $grid->links[$l2][$popped[0]] = 1;
-        $grid->links[$l3][$popped[0]] = 1;
-        $i = $popped[2];
+        $i = $popped[0];
         $possibleNumbers = $popped[1];
-        $pos = $popped[4];
+//        $grid->links = $popped[2];
+        $pos = $popped[3];
+
+//        var_dump($popped[2]);
+        $grid->links = $popped[2];
+//
+//        $l1 = $popped[4][0];
+//        $l2 = $popped[4][1];
+//        $l3 = $popped[4][2];
+//
+//        $grid->links[$l1][$popped[0]] = 1;
+//        $grid->links[$l2][$popped[0]] = 1;
+//        $grid->links[$l3][$popped[0]] = 1;
+//        $i = $popped[2];
+//        $possibleNumbers = $popped[1];
+//        $pos = $popped[4];
         ++$i;
         goto iterate;
     }
@@ -253,7 +267,7 @@ function solve($grid) {
     $grid->cells[$pos] = null;
     $grid->emptyCells[$pos] = true;
 
-    if ($grid->stack === 0) {
+    if (count($grid->stack) === 0) {
         return null;
     }
     //return null;

@@ -22,6 +22,9 @@
     "bruteforce-linked-flexible-distribution-goto": {
       "run": "php -n bin/bruteforce-linked-flexible-distribution-evil.php"
     },
+    "bruteforce-linked-flexible-distribution-bitwise": {
+      "run": "php -n bin/bruteforce-linked-flexible-distribution-bitwise.php"
+    },
     "bruteforce-linked-flexible-distribution-pcntl": {
       "run": "php -n bin/bruteforce-linked-flexible-distribution-pcntl.php"
     },

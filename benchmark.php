@@ -180,6 +180,32 @@ foreach ($implementations as $implementation) {
     $rows[] = $row;
 }
 
+$green = "\033[32m";
+$none = "\033[0m";
+$lowest = [];
+foreach ($selfReportedRows as $k => $row) {
+    foreach ($row as $col => $value) {
+        if ($col <= 1) {
+            continue;
+        }
+        if (!isset($lowest[$col]) || $lowest[$col] > $value) {
+            $lowest[$col] = $value;
+        }
+    }
+}
+
+foreach ($selfReportedRows as $k => $row) {
+    foreach ($row as $col => $value) {
+        if ($col <= 1) {
+            continue;
+        }
+        if ($value === $lowest[$col]) {
+            $selfReportedRows[$k][$col] = $green . $value . $none;
+        }
+    }
+}
+
+
 
 echo "Script reported times:\n";
 $output = new \Symfony\Component\Console\Output\StreamOutput(STDOUT);
