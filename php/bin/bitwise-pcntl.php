@@ -47,7 +47,7 @@ const BLOCK_LINK_OFFSET = 18;
 
 $links = array_pad([], 27, 511);
 $cellLinks = [];
-$linksToCells = [];
+//$linksToCells = [];
 foreach ($cells as $id => $cell) {
     // RowId
     $rowId = (int)floor($id / 9);
@@ -75,7 +75,7 @@ foreach ($cells as $id => $cell) {
         BLOCK_LINK_OFFSET + $blockId
     ];
 
-    $linksToCells[ROW_LINK_OFFSET + $rowId][] = $id;
+//    $linksToCells[ROW_LINK_OFFSET + $rowId][] = $id;
 }
 
 
@@ -230,7 +230,7 @@ function solve($grid) {
         $grid->links[$l2] = $grid->links[$l2] | $number;
         $grid->links[$l3] = $grid->links[$l3] | $number;
     }
-    $grid->cells[$pos] = null;
+//    $grid->cells[$pos] = null;
     $grid->emptyCells[$pos] = true;
 
     return null;

@@ -1,10 +1,10 @@
 # Benchmarks
 |Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|Example 5|
 |---|---|---|---|---|---|---|---|
-|rust|basic|0.046534|0.008023|0.005027|0.005434|0.208277|0.005908|
-|php|bitwise-pcntl|0.046911|0.035017|0.034391|0.035033|0.090325|0.039787|
+|rust|optimised|0.010359|0.00498|0.004847|0.004846|0.012142|0.02498|
+|php|bitwise-pcntl|0.048672|0.049695|0.031717|0.030716|0.08945|0.041782|
 |php|bruteforce-linked-flexible-distribution-bitwise|0.075141|0.030948|0.027647|0.028118|0.252131|0.036859|
-|rust|optimised|0.122736|0.398106|0.004748|0.004629|0.201534|0.004663|
+|rust|basic|0.103988|0.265646|0.005086|0.004537|0.239982|0.004689|
 |go|bruteforce|0.154612|0.031887|0.0052|0.005433|0.708489|0.02205|
 |php|bruteforce-linked-flexible-distribution-pcntl|0.193887|0.034288|0.035926|0.033909|0.817484|0.047826|
 |typescript|bruteforce|0.197603|0.047696|0.049569|0.053099|0.787591|0.050059|
@@ -25,7 +25,7 @@
 # Self Reported Benchmarks
 |Language|ImplementationName|Average|Example 1|Example 2|Example 3|Example 4|Example 5|
 |---|---|---|---|---|---|---|---|
-|php|bitwise-pcntl|[32m0.019572[0m|0.006869|0.006735|0.006851|[32m0.062753[0m|0.01465|
+|php|bitwise-pcntl|[32m0.019515[0m|0.00777|0.006459|0.005988|[32m0.061662[0m|0.015696|
 |php|bruteforce-linked-flexible-distribution-bitwise|0.046973|[32m0.000166[0m|[32m0.000404[0m|[32m0.000162[0m|0.224735|0.009399|
 |php|bruteforce-linked-flexible-distribution-pcntl|0.167468|0.006994|0.008734|0.006961|0.790868|0.023784|
 |php|andy-hacky-solver-v2|0.279678|0.000447|0.001235|0.002604|0.425228|0.968878|
