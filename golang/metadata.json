@@ -1,9 +1,10 @@
 {
   "language": "go",
   "implementations": {
-    "bruteforce": {
-      "build": "go build && chmod +x ./golang",
-      "run": "./golang"
+    "basic": {
+      "dir": "basic",
+      "build": "go build && chmod +x ./basic",
+      "run": "./basic"
     }
   }
 }

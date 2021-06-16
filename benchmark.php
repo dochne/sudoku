@@ -66,6 +66,9 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
         if (!file_exists($cacheFilename) || $noCache) {
             chdir($folder);
             if (isset($config["dir"])) {
+                if (!file_exists($config["dir"])) {
+                    throw new \Exception("Folder " . $config["dir"] . " does not exist");
+                }
                 chdir($config["dir"]);
             }
             if (isset($config["build"])) {
@@ -82,7 +85,8 @@ foreach ($implementations as $index => ["language" => $language, "folder" => $fo
             $selfReportedTime = null;
 
             $result = implode("\n", $output);
-            if ($result[0] === "{") {
+
+            if (($result[0] ?? "") === "{") {
                 $decoded = json_decode($result, true);
                 $selfReportedTime = $decoded["time"];
                 $result = $decoded["output"];

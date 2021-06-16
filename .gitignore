@@ -3,6 +3,7 @@
 /php/vendor
 /cache
 /composer.lock
+/golang/basic/basic
 /rust/*/bin
 /rust/*/target
 /typescript/node_modules

@@ -4,7 +4,7 @@ use std::env;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
-
+use std::process;
 // use math::round::floor;
 use math::round;
 
@@ -22,10 +22,12 @@ total_map
 */
 
 
+
 type Cells = [usize; 81];
 type Links = [usize; 27];
 type CellLinks = [[usize; 3]; 81];
 
+#[derive(Clone)]
 pub struct Grid {
     cells: Cells,
     cell_links: CellLinks,
@@ -33,7 +35,8 @@ pub struct Grid {
     empty_cells: HashSet<usize>,
     number_map: Vec<Vec<usize>>,
     total_map: [usize; 512],
-    inverse_map: HashMap<usize, usize>
+    inverse_map: HashMap<usize, usize>,
+    success: bool
 }
 
 impl Grid {
@@ -48,9 +51,96 @@ impl Grid {
         }
     }
 
+    fn begin_solve(&mut self) -> Option<Grid> {
+        if self.empty_cells.len() == 0 {
+            // Already solved
+            return None
+        }
+
+        let mut highest_link_total = 10;
+        let mut pos: usize = 0;
+        let mut pos_key: usize = 0;
+
+        // For each of the empty cells, look at how many valid numbers are left
+        for id in self.empty_cells.iter() {
+            let l1 = self.cell_links[*id][0];
+            let l2 = self.cell_links[*id][1];
+            let l3 = self.cell_links[*id][2];
+
+            let key = self.links[l1] & self.links[l2] & self.links[l3];
+            let count_intersect = self.total_map[key];
+
+            // We want to find the entry with the smallest number of options
+            if count_intersect < highest_link_total {
+                pos = *id;
+                pos_key = key;
+
+                // If it only has the one option, then we're going to want to apply this immediately and continue!
+                if count_intersect == 1 {
+                    break;
+                }
+                highest_link_total = count_intersect;
+            }
+        }
+
+
+        let l1 = self.cell_links[pos][0];
+        let l2 = self.cell_links[pos][1];
+        let l3 = self.cell_links[pos][2];
+        self.empty_cells.remove(&pos);
+
+        //let numbers = self.number_map[pos_key].iter().enumerate();
+
+        let mut handles = vec![];
+        for n in 0..self.number_map[pos_key].len() {
+            let mut new_grid = self.clone();
+            let number = self.number_map[pos_key][n];
+
+            new_grid.cells[pos] = number;
+
+            new_grid.links[l1] = new_grid.links[l1] ^ number;
+            new_grid.links[l2] = new_grid.links[l2] ^ number;
+            new_grid.links[l3] = new_grid.links[l3] ^ number;
+
+
+            let handle = std::thread::spawn(move || {
+                if new_grid.solve() {
+                    return Some(new_grid)
+                }
+                None
+                
+                // Find start and end for this thread
+                
+                // let sub_a = a + i * step;
+                // let sub_b = if i < threads - 1 { sub_a + step } else { b };
+                // // Reuse function from single-threaded example
+                // result += modulo_add_range(sub_a, sub_b, c);
+            });
+            handles.push(handle)
+        }
+
+
+        // let err = panic::catch_unwind(move || {
+        for h in handles {
+            //println!("{}", h.thread().id().as_u64());
+            let value = h.join().unwrap();
+            
+            if value.is_some() {
+                return value;
+            }
+        }
+        // }
+
+        None
+    }
+
     fn solve(&mut self) -> bool {
         if self.empty_cells.len() == 0 {
-            return true;
+            self.success = true;
+            self.print();
+            //system.process.exit(0);
+            process::exit(0);
+            // return true;
         }
 
         let mut lowest_link_total = 10;
@@ -89,7 +179,6 @@ impl Grid {
         let l3 = self.cell_links[pos][2];
         self.empty_cells.remove(&pos);
 
-
         //let numbers = self.number_map[pos_key].iter().enumerate();
         for n in 0..self.number_map[pos_key].len() {
             let number = self.number_map[pos_key][n];
@@ -112,7 +201,6 @@ impl Grid {
         self.empty_cells.insert(pos);
 
         false
-
     }
 }
 
@@ -226,12 +314,13 @@ fn main() {
         empty_cells,
         number_map,
         total_map,
-        inverse_map
+        inverse_map,
+        success: false
     };
 
-    if sudoku_grid.solve() {
-        sudoku_grid.print();
-    } else {
-        println!("Unsolvable!")
+    let complete_grid = sudoku_grid.begin_solve();
+    match complete_grid {
+        Some(grid) => grid.print(),
+        None => println!("Unsolvable")
     }
 }
