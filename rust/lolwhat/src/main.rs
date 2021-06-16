@@ -4,7 +4,6 @@ use std::env;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
-
 // use math::round::floor;
 use math::round;
 
@@ -57,7 +56,6 @@ impl Grid {
         let mut pos: usize = 0;
         let mut pos_key: usize = 0;
 
-        // For each of the empty cells, look at how many valid numbers are left
         for id in self.empty_cells.iter() {
             let l1 = self.cell_links[*id][0];
             let l2 = self.cell_links[*id][1];
@@ -66,12 +64,10 @@ impl Grid {
             let key = self.links[l1] & self.links[l2] & self.links[l3];
             let count_intersect = self.total_map[key];
 
-            // We want to find the entry with the smallest number of options
             if count_intersect < lowest_link_total {
                 pos = *id;
                 pos_key = key;
 
-                // If it only has the one option, then we're going to want to apply this immediately and continue!
                 if count_intersect == 1 {
                     break;
                 }

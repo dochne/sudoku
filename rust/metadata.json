@@ -10,6 +10,16 @@
       "dir": "optimised",
       "build": "cargo build --release --target-dir bin",
       "run": "bin/release/sudoku"
+    },
+    "optimised-multithreaded": {
+      "dir": "optimised-multithread",
+      "build": "cargo build --release --target-dir bin",
+      "run": "bin/release/sudoku"
+    },
+    "optimised-cleaned": {
+      "dir": "optimised-cleaned",
+      "build": "cargo build --release --target-dir bin",
+      "run": "bin/release/sudoku"
     }
   }
 }
