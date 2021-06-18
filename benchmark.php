@@ -174,22 +174,36 @@ foreach ($implementations as $implementation) {
     if ($selfReported) {
         $selfReportedRows[] = $selfReportedRow;
     }
-
-//        $implementation["result"]["valid"] ?
-//        round($implementation["result"]["time"], 6),
-//        $implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
-//    ];
-
-    //$implementation["result"]["valid"] ? "\u{2713}" : "\u{2718}"
-//
-//    if ($includeResult) {
-//        $row[] = "-----------------\n" . $implementation["result"]["result"];
-//    }
     $rows[] = $row;
 }
 
+
 $green = "\033[32m";
 $none = "\033[0m";
+$lowest = [];
+foreach ($rows as $k => $row) {
+    foreach ($row as $col => $value) {
+        if ($col <= 1) {
+            continue;
+        }
+        if (!isset($lowest[$col]) || $lowest[$col] > $value) {
+            $lowest[$col] = $value;
+        }
+    }
+}
+
+foreach ($rows as $k => $row) {
+    foreach ($row as $col => $value) {
+        if ($col <= 1) {
+            continue;
+        }
+        if ($value === $lowest[$col]) {
+            $rows[$k][$col] = $green . $value . $none;
+        }
+    }
+}
+
+
 $lowest = [];
 foreach ($selfReportedRows as $k => $row) {
     foreach ($row as $col => $value) {
