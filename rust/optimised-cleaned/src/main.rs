@@ -4,13 +4,10 @@ use std::env;
 // use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
-// use std::process;
-// use std::thread::JoinHandle;
-// use std::sync::atomic::{AtomicU32, Ordering};
+
+use std::sync::atomic::{AtomicU32, Ordering};
 
 use math::round;
-
-
 
 extern crate math;
 
@@ -22,6 +19,7 @@ type Links = [usize; 27];
 type CellLinks = [CellLink; 81];
 type CellLink = [usize; 3];
 
+#[derive(Clone)]
 struct Grid {
     cells: Cells,
     cell_links: CellLinks,
@@ -90,54 +88,7 @@ fn binary_to_represented_numbers(number_to_binary_map: NumberToBinaryMap) -> Bin
         number_map.push(numbers)
     }
     number_map
-
-
-    // //let mut binary_to_represented_numbers: [Vec<usize>; 512] = std::iter::repeat(vec![]).take(512).collect::<Vec<usize>>(); //[vec!(); 512];
-    // const INIT: Vec<usize> = vec![0];
-
-    // // let mut binary_to_represented_numbers: BinaryToRepresentedNumbers = Vec::new();
-    // //binary_to_represented_numbers.append(vec![5]);
-
-
-    
-    // //let v = vec![5];
-
-    // let mut long_array: [Vec<usize>; 512] = [INIT; 512];
-
-    // //let v = long_array.to_vec();
-
-    // let mut n = 0;
-    // while n < 512 {
-    //     let mut i = 1;
-    //     let mut numbers: [usize; 9] = [0; 9];
-    //     //let mut numbers = Vec::new();
-    //     let mut len = 0;
-    //     while i < 10 {
-    //         if binary_to_number_map[i] != 0 {
-    //             // numbers.push(i);
-    //             numbers[len] = i;
-    //             //len = len + 1;
-    //         }
-
-    //         //binary_to_represented_numbers.push(numbers);
-    //     }
-
-    //     vec!();
-    //     //long_array[i] = numbers.to_vec();
-
-
-    //     //binary_to_represented_numbers[n] = numbers.to_vec();
-
-    //     n = n + 1;
-    // }
-
-    // long_array
 }
-
-
-
-    // Cool! All that remains is creating the maps we'll be using to be super duper fast!
-    // A speedy map of our number (say, 3) to it's binary representation (8)
 
 const NUMBER_TO_BINARY_MAP: NumberToBinaryMap = number_to_binary_map();
 const BINARY_TO_NUMBER_MAP: BinaryToNumberMap = binary_to_number_map();
@@ -147,14 +98,15 @@ lazy_static! {
     static ref BINARY_TO_REPRESENTED_NUMBERS: BinaryToRepresentedNumbers = binary_to_represented_numbers(NUMBER_TO_BINARY_MAP);
 }
 
-fn main() {
-    // let BINARY_TO_REPRESENTED_NUMBERS: BinaryToRepresentedNumbers = binary_to_represented_numbers(binary_to_number_map());
+static atomic: AtomicU32 = AtomicU32::new(0);
+static mut ATTEMPT_ATOMIC: i32 = 0;
 
+fn main() {
     let args: Vec<String> = env::args().collect();
     let filename = &args[1];
     let cells = read_file(filename);
     let grid = build_grid(cells);
-
+    
     let grid = solve(grid);
     if grid.complete {
         print_grid(grid);
@@ -165,8 +117,9 @@ fn main() {
 
 fn solve(mut grid: Grid) -> Grid {
     if grid.empty_cells.len() == 0 {
-        grid.complete = true;
-        return grid;
+        print_grid(grid);
+        std::process::exit(0);
+        //return grid;
     }
 
     let mut lowest_link_total = 10;
@@ -200,36 +153,34 @@ fn solve(mut grid: Grid) -> Grid {
         }
     }
 
+    let len = BINARY_TO_REPRESENTED_NUMBERS[pos_key].len(); 
+
+    if (unsafe {ATTEMPT_ATOMIC} % 500 == 0) && len > 1 && thread_claim(len - 1) {
+        grid = threaded_solve(grid, pos, pos_key);
+        // println!("Returning from threaded solve");
+        thread_release(len - 1);
+        return grid;
+    }
+    
+    unsafe {
+        ATTEMPT_ATOMIC = ATTEMPT_ATOMIC + 1;
+    }
+
     let l1 = grid.cell_links[pos][0];
     let l2 = grid.cell_links[pos][1];
     let l3 = grid.cell_links[pos][2];
     grid.empty_cells.remove(&pos);
 
-    
-    // println!("{}", pos_key);
-    // println!("{}", BINARY_TO_REPRESENTED_NUMBERS[pos_key][0]);
-
-    // for n in 0..BINARY_TO_REPRESENTED_NUMBERS[pos_key].len() {
-    //     let number = BINARY_TO_REPRESENTED_NUMBERS[pos_key][n];
-    //     // println!("{} {}", pos_key, number);
-    // }
-
-    for n in 0..BINARY_TO_REPRESENTED_NUMBERS[pos_key].len() {
+    for n in 0..len {
         let number = BINARY_TO_REPRESENTED_NUMBERS[pos_key][n];
-        // println!("{} {}", pos_key, number);
-        
         grid.cells[pos] = number;
 
         grid.links[l1] = grid.links[l1] ^ number;
         grid.links[l2] = grid.links[l2] ^ number;
         grid.links[l3] = grid.links[l3] ^ number;
 
-        //println!("Solving grid {}", grid.empty_cells.len());
         grid = solve(grid);
-        if grid.complete {
-            return grid;
-        }
-        
+
         grid.links[l1] = grid.links[l1] | number;
         grid.links[l2] = grid.links[l2] | number;
         grid.links[l3] = grid.links[l3] | number;
@@ -237,6 +188,68 @@ fn solve(mut grid: Grid) -> Grid {
 
     grid.empty_cells.insert(pos);
     return grid
+}
+
+fn threaded_solve(mut grid: Grid, pos: usize, pos_key: usize) -> Grid {
+    let l1 = grid.cell_links[pos][0];
+    let l2 = grid.cell_links[pos][1];
+    let l3 = grid.cell_links[pos][2];
+    grid.empty_cells.remove(&pos);
+
+    let mut handles = vec![];
+    for n in 0..BINARY_TO_REPRESENTED_NUMBERS[pos_key].len() {
+        let number = BINARY_TO_REPRESENTED_NUMBERS[pos_key][n];
+
+        let mut new_grid = grid.clone();
+        new_grid.cells[pos] = number;
+        new_grid.links[l1] = new_grid.links[l1] ^ number;
+        new_grid.links[l2] = new_grid.links[l2] ^ number;
+        new_grid.links[l3] = new_grid.links[l3] ^ number;
+
+        // println!("New thread!");
+        let handle = std::thread::spawn(move || {
+            solve(new_grid)
+        });
+        handles.push(handle)
+    }
+    
+    // println!("\n{} handles", handles.len());
+    for h in handles {
+        //println!("Unwrapping handles");
+        h.join().unwrap();
+    }
+    grid.empty_cells.insert(pos);
+
+    grid
+}
+
+fn thread_claim(len: usize) -> bool {
+    const MAX_THREADS: usize = 64;
+    loop {
+        
+        let value = atomic.load(Ordering::Relaxed);
+        // println!("{} threads running", value);
+        if value as usize + len > MAX_THREADS {
+            return false;
+        }
+
+        if atomic.compare_exchange_weak(value, value + len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+            // println!("Claimed {} threads", len);
+            return true;
+        }
+    }
+}
+
+fn thread_release(len: usize) -> bool {
+    
+    loop {
+        let value = atomic.load(Ordering::Relaxed);
+
+        if atomic.compare_exchange_weak(value, value - len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+            //println!("Released {} threads", len);
+            return true;
+        }
+    }
 }
 
 fn print_grid(grid: Grid) {
@@ -341,247 +354,3 @@ mod tests {
         assert_eq!(rep_numbers[1], vec![1]);
     }
 }
-//     let number_to_binary_map = bin_map;
-//     let binary_to_number_map = inverse_map;
-
-//     // This speedily lets us know how many times 1 appears in the bitfield for a given input
-//     let mut total_map = [0; 512];
-//     for n in 0..512 {
-//         let mut count = 0;
-//         let mut v = n;
-//         while v > 0 {
-//             count = count + 1;
-//             v = v & (v - 1)
-//         }
-//         total_map[n] = count;
-//     }
-//     let total_map = total_map;
-
-//     let mut number_map = Vec::new(); // [Vec; 512];
-//     for n in 0..512 {
-//         let mut numbers = Vec::new();
-//         for i in 1..10 {
-//             if n & bin_map[i] != 0 {
-//                 numbers.push(bin_map[i]);
-//             }
-//         }
-//         number_map.push(numbers)
-//     }
-//     let number_map = number_map;
-
-
-
-// //type Threads = [SolveThread; 50]; // w
-// type SolveThread = JoinHandle<Option<bool>>;
-
-// struct Threads([Option<SolveThread>; 50], usize);
-
-
-// // fn createThreads() -> Threads {
-// //     Threads([None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],0)
-// // }
-// // impl Threads {
-// //     pub fn new() -> Threads {
-        
-// //     }
-
-// //     pub fn append(&mut self, thread: SolveThread) {
-// //         self.threads[self.pointer] = Some(thread);
-// //         self.pointer = self.pointer + 1;
-// //     }
-// // }
-
-
-// number_map: Vec<Vec<usize>>,
-
-// #[derive(Clone)]
-// pub struct Grid {
-//     cells: Cells,
-//     cell_links: CellLinks,
-//     links: Links,
-//     empty_cells: HashSet<usize>,
-//     total_map: [usize; 512],
-//     inverse_map: HashMap<usize, usize>,
-//   //  threads: Threads,
-//     success: bool
-// }
-
-// impl Grid {
-
-//     fn print(&self) {
-//         for (key, value) in self.cells.iter().enumerate() {
-//             if key % 9 == 0 {
-//                 println!()
-//             }
-
-//             print!("{}", self.inverse_map[value]);
-//         }
-//     }
-
-//     fn threaded_solve(&mut self, threadCount: &'static AtomicU32, mut threads: &'static &Threads){
-//         let mut new_grid = self.clone();
-
-//         let thread: SolveThread = std::thread::spawn(move || {
-//             //static mut new_threads: Threads = Threads([None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],0);
-//             unsafe {
-//                 new_grid.solve(threadCount, &threads);
-//             }
-//             //     return Some(new_grid)
-//             // }
-
-//             let count = threadCount.load(Ordering::Relaxed);
-//             // haha let's not make it threadsafe because I don't care enough
-//             threadCount.swap(count - 1, Ordering::Relaxed);
-//             //threadCount.compare_and_swap(count, count - 1, Ordering::SeqCst, Ordering::Relaxed)
-//             //None
-//             None
-//         });
-
-//         //threads.
-//         threads.0[threads.1] = Some(thread);
-//         threads.1 = threads.1 + 1;
-//         //threads.append(thread);
-//         //.push(thread);
-
-
-
-//         // = foo;
-
-//         //self.threads.push(thread);
-//         // handles.push(handle)
-
-//         // // let err = panic::catch_unwind(move || {
-//         // for h in handles {
-//         //     //println!("{}", h.thread().id().as_u64());
-//         //     let value = h.join().unwrap();
-            
-//         //     if value.is_some() {
-//         //         return value;
-//         //     }
-//         // }
-//         // }
-
-//     }
-
-//     fn get_thread(&mut self, threadCount: &AtomicU32) -> bool{
-//         const MAX_THREADS: u32 = 12;
-//         let total = threadCount.load(Ordering::Relaxed);
-//         if total < MAX_THREADS {
-//             println!("getting thread");
-//             threadCount.swap(total - 1, Ordering::Relaxed);
-//             return true;
-//         }
-//         println!("or not");
-//         return false;
-//     }
-
-//     fn solve(&mut self, threadCount: &'static AtomicU32, mut threads: &'static &Threads) -> bool {
-//         if self.empty_cells.len() == 0 {
-//             self.success = true;
-//             self.print();
-//             //system.process.exit(0);
-//             process::exit(0);
-//             // return true;
-//         }
-
-//         let mut lowest_link_total = 10;
-//         let mut pos: usize = 0;
-//         let mut pos_key: usize = 0;
-
-//         // For each of the empty cells, look at how many valid numbers are left
-//         for id in self.empty_cells.iter() {
-//             let l1 = self.cell_links[*id][0];
-//             let l2 = self.cell_links[*id][1];
-//             let l3 = self.cell_links[*id][2];
-
-//             let key = self.links[l1] & self.links[l2] & self.links[l3];
-//             let count_intersect = self.total_map[key];
-
-//             // We want to find the entry with the smallest number of options
-//             if count_intersect < lowest_link_total {
-//                 pos = *id;
-//                 pos_key = key;
-
-//                 // If it only has the one option, then we're going to want to apply this immediately and continue!
-//                 if count_intersect == 1 {
-//                     break;
-//                 }
-
-//                 if count_intersect == 0 {
-//                     return false;
-//                 }
-
-//                 lowest_link_total = count_intersect;
-//             }
-//         }
-
-    
-//         let l1 = self.cell_links[pos][0];
-//         let l2 = self.cell_links[pos][1];
-//         let l3 = self.cell_links[pos][2];
-//         self.empty_cells.remove(&pos);
-
-//         //let numbers = self.number_map[pos_key].iter().enumerate();
-//         for n in 0..self.number_map[pos_key].len() {
-//             let number = self.number_map[pos_key][n];
-
-//             self.cells[pos] = number;
-
-//             self.links[l1] = self.links[l1] ^ number;
-//             self.links[l2] = self.links[l2] ^ number;
-//             self.links[l3] = self.links[l3] ^ number;
-
-
-//             if self.get_thread(threadCount) {
-//                 self.threaded_solve(threadCount, threads);
-//             } else {
-//                 self.solve(threadCount, threads);
-//             }
-            
-
-//             self.links[l1] = self.links[l1] | number;
-//             self.links[l2] = self.links[l2] | number;
-//             self.links[l3] = self.links[l3] | number;
-//         }
-
-//         self.empty_cells.insert(pos);
-
-//         false
-//     }
-// }
-
-// fn main() {
-
-//     // Then continue by populating the cell_links!
-
-
-
-
-    
-//     static totalThreads: AtomicU32 = AtomicU32::new(1);
-
-
-//     // Now let's make us a grid!
-//     let sudoku_grid = &mut Grid {
-//         cells,
-//         links,
-//         cell_links,
-//         empty_cells,
-//         number_map,
-//         total_map,
-//         inverse_map,
-//         success: false
-//     };
-
-
-//     static mut threads: Threads = Threads([None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],0);
-
-//     unsafe {
-//         let complete_grid = sudoku_grid.solve(&totalThreads, &threads);
-//     }
-    
-//     // match complete_grid {
-//     //     Some(grid) => grid.print(),
-//     //     None => println!("Unsolvable")
-//     // }
-// }
