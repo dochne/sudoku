@@ -7,6 +7,8 @@ use std::io::{BufRead, BufReader};
 
 use std::sync::atomic::{AtomicU32, Ordering};
 
+use std::collections::{BTreeMap};
+
 use math::round;
 
 extern crate math;
@@ -19,10 +21,15 @@ type Links = [usize; 27];
 type CellLinks = [CellLink; 81];
 type CellLink = [usize; 3];
 
+type CellAntiLinks = [CellAntiLink; 81];
+type CellAntiLink = [usize; 4];
+
+
 #[derive(Clone)]
 struct Grid {
     cells: Cells,
     cell_links: CellLinks,
+    cell_anti_links: CellAntiLinks,
     links: Links,
     empty_cells: HashSet<usize>,
     complete: bool
@@ -98,8 +105,46 @@ lazy_static! {
     static ref BINARY_TO_REPRESENTED_NUMBERS: BinaryToRepresentedNumbers = binary_to_represented_numbers(NUMBER_TO_BINARY_MAP);
 }
 
-static atomic: AtomicU32 = AtomicU32::new(0);
-static mut ATTEMPT_ATOMIC: i32 = 0;
+// lazy_static! {
+//     static ref DIVISION = BTreeMap<usize, usize> = BTreeMap::new();
+
+//     DIVISION.insert(1, 0);
+//     DIVISION.insert(2, 1);
+//     DIVISION.insert(2, 1);
+
+//     // 1 => 0,
+// // 2 => 1,
+// // 4 => 2,
+// // 8 => 3,
+// // 16 => 4,
+// // 32 => 5,
+// // 64 => 6,
+// // 128 => 7,
+// // 256 => 8,
+// // _ => 9
+// }
+
+// const DIVISION: 
+
+// }
+// let division = match number {
+
+// };
+
+
+
+// let value = ((grid.links[al1] & number) +
+// (grid.links[al2] & number) + 
+// (grid.links[al3] & number) + 
+// (grid.links[al4] & number)); // dividing here is slow-af - we should use bitshift
+
+
+// //println!("{} {} {} {}", value, number, value / number, value >> division);
+
+// let value = value >> division;
+
+
+static TOTAL_RUNNING_THREADS: AtomicU32 = AtomicU32::new(0);
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -115,79 +160,226 @@ fn main() {
     }
 }
 
+fn process_tree(mut grid: Grid, tree: BTreeMap<usize, (usize, usize)>) -> Grid {
+    // println!("Tree has {} nodes", tree.len());
+    println!("Enter solve {} {}", grid.empty_cells.len(), tree.len());
+    for (_key, (cell_id, number)) in tree.iter() {
+        // println!("{} {} {}", key, cell_id, number);
+        grid.empty_cells.remove(cell_id);
+        grid.cells[*cell_id] = *number;
+
+        let l1 = grid.cell_links[*cell_id][0];
+        let l2 = grid.cell_links[*cell_id][1];
+        let l3 = grid.cell_links[*cell_id][2];
+
+        grid.links[l1] = grid.links[l1] ^ *number;
+        grid.links[l2] = grid.links[l2] ^ *number;
+        grid.links[l3] = grid.links[l3] ^ *number;
+    
+        grid = solve(grid);
+    
+        grid.links[l1] = grid.links[l1] | *number;
+        grid.links[l2] = grid.links[l2] | *number;
+        grid.links[l3] = grid.links[l3] | *number;
+    
+        grid.cells[*cell_id] = 0;
+        grid.empty_cells.insert(*cell_id);
+    }
+    println!("Leave solve {}", grid.empty_cells.len());
+    return grid;
+}
+
 fn solve(mut grid: Grid) -> Grid {
+    // grid = print_grid(grid);
+
+    // println!("Enter solve {}", grid.empty_cells.len());
     if grid.empty_cells.len() == 0 {
         print_grid(grid);
         std::process::exit(0);
-        //return grid;
     }
 
-    let mut lowest_link_total = 10;
-    let mut pos: usize = 0;
-    let mut pos_key: usize = 0;
+    // let mut lowest_link_total = 10;
+    // let mut cell_id: usize = 0;
+    // let mut cell_binary_intersect: usize = 0;
+
+    let mut binary_tree: BTreeMap<usize, (usize, usize)> = BTreeMap::new();
+    // println!("Created tree");
 
     // For each of the empty cells, look at how many valid numbers are left
-    for id in grid.empty_cells.iter() {
-        let l1 = grid.cell_links[*id][0];
-        let l2 = grid.cell_links[*id][1];
-        let l3 = grid.cell_links[*id][2];
+    for cell_id in grid.empty_cells.iter() {
+        // println!("CellId {}", cell_id);
+        let l1 = grid.cell_links[*cell_id][0];
+        let l2 = grid.cell_links[*cell_id][1];
+        let l3 = grid.cell_links[*cell_id][2];
 
-        let key = grid.links[l1] & grid.links[l2] & grid.links[l3];
-        let count_intersect = BINARY_TO_TOTAL_NUMBERS[key];
+        let cell_binary_intersect = grid.links[l1] & grid.links[l2] & grid.links[l3];
+        let count_intersect = BINARY_TO_TOTAL_NUMBERS[cell_binary_intersect];
 
-        // We want to find the entry with the smallest number of options
-        if count_intersect < lowest_link_total {
-            pos = *id;
-            pos_key = key;
+        if count_intersect == 0 {
+            return grid;
+        }
 
-            // If it only has the one option, then we're going to want to apply this immediately and continue!
-            if count_intersect == 1 {
-                break;
-            }
+        if count_intersect == 1 {
+            binary_tree.clear();
+            binary_tree.insert(0, (*cell_id, BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect][0]));
+            return process_tree(grid, binary_tree);
+        }
 
-            if count_intersect == 0 {
-                return grid;
-            }
+        //for number in BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect].iter() {
+        let len = BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect].len();
+        for n in 0..len {
+            let number = &BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect][n];
+            // println!("  Number {}", BINARY_TO_NUMBER_MAP[*number]);
+            // println!("{} - {}", number, BINARY_TO_NUMBER_MAP[*number]);
+            // let al1 = grid.cell_anti_links[*cell_id][0];
+            // let al2 = grid.cell_anti_links[*cell_id][1];
+            // let al3 = grid.cell_anti_links[*cell_id][2];
+            // let al4 = grid.cell_anti_links[*cell_id][3];
+    
+            // let value =
+            //     ((grid.links[al1] & *number) +
+            //     (grid.links[al2] & *number) + 
+            //     (grid.links[al3] & *number) + 
+            //     (grid.links[al4] & *number)) / *number; // dividing here is slow-af - we should use bitshift
+    
+            // if value == 0 {
+            //     binary_tree.clear();
+            //     binary_tree.insert(0, (*cell_id, cell_binary_intersect, *number));
+            //     return process_tree(grid, binary_tree);
+            // }
 
-            lowest_link_total = count_intersect;
+            // let sort = (*number * 16) + ((5 - value) * 8) + *cell_id;
+            let sort = (*number * 8) + *cell_id;
+            //println!("{} {} {} {}", sort, number, ((5 - value) * 8), cell_id);
+            // let sort = *number;
+            binary_tree.insert(sort, (*cell_id, *number));
+            //println!("Inserted 1 - {}", binary_tree.len());
         }
     }
+    // println!("{}", binary_tree.first_entry().unwrap().0);
+    let grid = process_tree(grid, binary_tree);
+    // std::process::exit(0);
+    return grid;
+        // for n in 0..len {
+        //     let number = BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect][n];
 
-    let len = BINARY_TO_REPRESENTED_NUMBERS[pos_key].len(); 
 
-    if (unsafe {ATTEMPT_ATOMIC} % 500 == 0) && len > 1 && thread_claim(len - 1) {
-        grid = threaded_solve(grid, pos, pos_key);
-        // println!("Returning from threaded solve");
-        thread_release(len - 1);
-        return grid;
-    }
+        // }   
+
+    //     let value = count_intersect * 8;
+    //     BINARY_TO_REPRESENTED_NUMBERS[]
+
+
+
+    //     binary_tree.insert()
+    //     // We want to find the entry with the smallest number of options
+    //     if count_intersect < lowest_link_total {
+    //         cell_id = *id;
+    //         cell_binary_intersect = key;
+
+    //         // If it only has the one option, then we're going to want to apply this immediately and continue!
+    //         if count_intersect == 1 {
+    //             break;
+    //         }
+
+    //         if count_intersect == 0 {
+    //             return grid;
+    //         }
+
+    //         lowest_link_total = count_intersect;
+    //     }
+    // }
+
+    // let len = BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect].len(); 
+
+    // let l1 = grid.cell_links[cell_id][0];
+    // let l2 = grid.cell_links[cell_id][1];
+    // let l3 = grid.cell_links[cell_id][2];
+    // grid.empty_cells.remove(&cell_id);
+
+    // let mut priority: [Vec<usize>; 4] = [vec![], vec![], vec![], vec![]];
+    // for n in 0..len {
+    //     let number = BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect][n];
+    //     let al1 = grid.cell_anti_links[cell_id][0];
+    //     let al2 = grid.cell_anti_links[cell_id][1];
+    //     let al3 = grid.cell_anti_links[cell_id][2];
+    //     let al4 = grid.cell_anti_links[cell_id][3];
+
+    //     let value =
+    //         ((grid.links[al1] & number) +
+    //         (grid.links[al2] & number) + 
+    //         (grid.links[al3] & number) + 
+    //         (grid.links[al4] & number)); // dividing here is slow-af - we should use bitshift
     
-    unsafe {
-        ATTEMPT_ATOMIC = ATTEMPT_ATOMIC + 1;
-    }
+    //     let division = match number {
+    //         1 => 0,
+    //         2 => 1,
+    //         4 => 2,
+    //         8 => 3,
+    //         16 => 4,
+    //         32 => 5,
+    //         64 => 6,
+    //         128 => 7,
+    //         256 => 8,
+    //         _ => 9
+    //     };
 
-    let l1 = grid.cell_links[pos][0];
-    let l2 = grid.cell_links[pos][1];
-    let l3 = grid.cell_links[pos][2];
-    grid.empty_cells.remove(&pos);
+    //         //println!("{} {} {} {}", value, number, value / number, value >> division);
 
-    for n in 0..len {
-        let number = BINARY_TO_REPRESENTED_NUMBERS[pos_key][n];
-        grid.cells[pos] = number;
+    //         let value = value >> division;
 
-        grid.links[l1] = grid.links[l1] ^ number;
-        grid.links[l2] = grid.links[l2] ^ number;
-        grid.links[l3] = grid.links[l3] ^ number;
+    //     //let value = value / number;
+    //     // println!("{} {} {} {} {} {}", value, number, (grid.links[al1] & number), (grid.links[al2] & number), (grid.links[al3] & number), (grid.links[al4] & number));
 
-        grid = solve(grid);
+    //     if value == 0 {
+    //         grid.cells[cell_id] = number;
 
-        grid.links[l1] = grid.links[l1] | number;
-        grid.links[l2] = grid.links[l2] | number;
-        grid.links[l3] = grid.links[l3] | number;
-    }
+    //         grid.links[l1] = grid.links[l1] ^ number;
+    //         grid.links[l2] = grid.links[l2] ^ number;
+    //         grid.links[l3] = grid.links[l3] ^ number;
 
-    grid.empty_cells.insert(pos);
-    return grid
+    //         grid = solve(grid);
+
+    //         grid.links[l1] = grid.links[l1] | number;
+    //         grid.links[l2] = grid.links[l2] | number;
+    //         grid.links[l3] = grid.links[l3] | number;
+
+    //         grid.empty_cells.insert(cell_id);
+    //         return grid
+    //     } else {
+    //         priority[value - 1].push(n);
+    //     }
+    // }
+
+    // if 1==2 && thread_claim(len - 1) {
+    //     grid = threaded_solve(grid, cell_id, cell_binary_intersect);
+    //     // println!("Returning from threaded solve");
+    //     thread_release(len - 1);
+    //     return grid;
+    // }
+    
+
+    // for p in 0..4 {
+    //     for n in priority[p].iter() {
+    //         let number = BINARY_TO_REPRESENTED_NUMBERS[cell_binary_intersect][*n];
+    
+    //         grid.cells[cell_id] = number;
+    
+    //         grid.links[l1] = grid.links[l1] ^ number;
+    //         grid.links[l2] = grid.links[l2] ^ number;
+    //         grid.links[l3] = grid.links[l3] ^ number;
+    
+    //         grid = solve(grid);
+    
+    //         grid.links[l1] = grid.links[l1] | number;
+    //         grid.links[l2] = grid.links[l2] | number;
+    //         grid.links[l3] = grid.links[l3] | number;
+    //     }
+    // }
+    
+
+    // grid.empty_cells.insert(cell_id);
+    // return grid
 }
 
 fn threaded_solve(mut grid: Grid, pos: usize, pos_key: usize) -> Grid {
@@ -227,13 +419,13 @@ fn thread_claim(len: usize) -> bool {
     const MAX_THREADS: usize = 64;
     loop {
         
-        let value = atomic.load(Ordering::Relaxed);
+        let value = TOTAL_RUNNING_THREADS.load(Ordering::Relaxed);
         // println!("{} threads running", value);
         if value as usize + len > MAX_THREADS {
             return false;
         }
 
-        if atomic.compare_exchange_weak(value, value + len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+        if TOTAL_RUNNING_THREADS.compare_exchange_weak(value, value + len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
             // println!("Claimed {} threads", len);
             return true;
         }
@@ -243,16 +435,16 @@ fn thread_claim(len: usize) -> bool {
 fn thread_release(len: usize) -> bool {
     
     loop {
-        let value = atomic.load(Ordering::Relaxed);
+        let value = TOTAL_RUNNING_THREADS.load(Ordering::Relaxed);
 
-        if atomic.compare_exchange_weak(value, value - len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+        if TOTAL_RUNNING_THREADS.compare_exchange_weak(value, value - len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
             //println!("Released {} threads", len);
             return true;
         }
     }
 }
 
-fn print_grid(grid: Grid) {
+fn print_grid(grid: Grid) -> Grid {
     for (key, value) in grid.cells.iter().enumerate() {
         if key % 9 == 0 {
             println!()
@@ -260,11 +452,13 @@ fn print_grid(grid: Grid) {
 
         print!("{}", BINARY_TO_NUMBER_MAP[*value]);
     }
+    grid
 }
 
 fn build_grid(cells: Cells) -> Grid {
     let mut links: Links = [511; 27];
     let mut cell_links: CellLinks = [[0; 3]; 81];
+    let mut cell_anti_links: CellAntiLinks = [[0; 4]; 81];
 
     let row_link_offset = 0;
     let col_link_offset = 9;
@@ -279,6 +473,29 @@ fn build_grid(cells: Cells) -> Grid {
             col_link_offset + col_id,
             block_link_offset + block_id
         ];
+
+        // 1 -> 2 + 3
+        // 2 -> 1 + 3
+        // 3 -> 1 + 2
+        let mut anti_links = vec![];
+        let anti_row_start_id = row_id - (row_id % 3);
+        let anti_col_start_id = col_id - (col_id % 3);
+
+        for add in 0..3 {
+            
+            let anti_row_id = anti_row_start_id + add;
+            if anti_row_id != row_id {
+                anti_links.push(row_link_offset + anti_row_id);
+            }
+
+            let anti_col_id = anti_col_start_id + add;
+            if anti_col_id != col_id {
+                anti_links.push(col_link_offset + anti_col_id);
+            }
+            // println!("add {} row {} anti_row {} col {} anti_col {}", add, row_id, anti_row_id, col_id, anti_col_id);
+        }
+        
+        cell_anti_links[key] = [anti_links[0], anti_links[1], anti_links[2], anti_links[3]];
     }
 
     // And we'll follow it up by populating the links! :)
@@ -305,6 +522,7 @@ fn build_grid(cells: Cells) -> Grid {
         cell_links,
         links,
         empty_cells,
+        cell_anti_links,
         complete: false
     }
 }
