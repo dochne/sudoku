@@ -1,4 +1,5 @@
 <?php
+
 include("vendor/autoload.php");
 chdir(__DIR__);
 
@@ -129,7 +130,7 @@ foreach ($implementations as $id => $implementation) {
 
 // Order by fastest to slowest
 usort($implementations, function($arr1, $arr2) {
-    return $arr2["average-result"]["time"] < $arr1["average-result"]["time"];
+    return $arr1["average-result"]["time"] <=> $arr2["average-result"]["time"];
 });
 
 //$includeResult = false;
@@ -159,8 +160,11 @@ foreach ($implementations as $implementation) {
     }
 
     foreach ($examples as $id => $example) {
-        $col = !$implementation["result"][$id]["valid"] ? "\u{2718}" : round($implementation["result"][$id]["time"], 6);
-        $selfCol = !$implementation["result"][$id]["valid"] ? "\u{2718}" : round($implementation["result"][$id]["self-time"], 6);
+        $value = $implementation["result"][$id];
+        $valid = $value["valid"];
+
+        $col = !$valid ? "\u{2718}" : ($value["time"] !== null ? round($value["time"], 6) : null);
+        $selfCol = !$valid ? "\u{2718}" : ($value["self-time"] !== null ? round($value["self-time"], 6) : null);
 
 //        $includeResult = true;
 //        if ($includeResult) {
@@ -238,7 +242,7 @@ $table->render();
 echo "\n";
 
 usort($selfReportedRows, function($arr1, $arr2) {
-    return $arr2[2] < $arr1[2];
+    return $arr1[2] <=> $arr2[2];
 });
 
 echo "Self-reported times:\n";

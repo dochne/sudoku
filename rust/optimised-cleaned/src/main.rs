@@ -98,7 +98,7 @@ lazy_static! {
     static ref BINARY_TO_REPRESENTED_NUMBERS: BinaryToRepresentedNumbers = binary_to_represented_numbers(NUMBER_TO_BINARY_MAP);
 }
 
-static atomic: AtomicU32 = AtomicU32::new(0);
+static ATOMIC: AtomicU32 = AtomicU32::new(0);
 static mut ATTEMPT_ATOMIC: i32 = 0;
 
 fn main() {
@@ -227,13 +227,13 @@ fn thread_claim(len: usize) -> bool {
     const MAX_THREADS: usize = 64;
     loop {
         
-        let value = atomic.load(Ordering::Relaxed);
+        let value = ATOMIC.load(Ordering::Relaxed);
         // println!("{} threads running", value);
         if value as usize + len > MAX_THREADS {
             return false;
         }
 
-        if atomic.compare_exchange_weak(value, value + len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+        if ATOMIC.compare_exchange_weak(value, value + len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
             // println!("Claimed {} threads", len);
             return true;
         }
@@ -243,9 +243,9 @@ fn thread_claim(len: usize) -> bool {
 fn thread_release(len: usize) -> bool {
     
     loop {
-        let value = atomic.load(Ordering::Relaxed);
+        let value = ATOMIC.load(Ordering::Relaxed);
 
-        if atomic.compare_exchange_weak(value, value - len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+        if ATOMIC.compare_exchange_weak(value, value - len as u32, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
             //println!("Released {} threads", len);
             return true;
         }

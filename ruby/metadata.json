@@ -1,0 +1,11 @@
+{
+  "language": "ruby",
+  "implementations": {
+    "basic": {
+      "run": "ruby basic/sudoku.rb"
+    },
+    "better_version": {
+      "run": "ruby better_version/sudoku.rb"
+    }
+  }
+}
