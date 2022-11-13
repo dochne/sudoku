@@ -19,7 +19,7 @@ that are very useful to know in each language:
 
 ## Potential languages to still do:
 
-- Ruby
+~- Ruby~
 - C
 - C#
 - LUA
@@ -31,3 +31,6 @@ that are very useful to know in each language:
 - Fortran
 - Cobol
 - Pure BASH maybe?
+- ZIG
+- Elixir
+- Lisp of some kind (hahaha probably not)
