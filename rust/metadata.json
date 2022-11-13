@@ -19,7 +19,8 @@
     "optimised-cleaned": {
       "dir": "optimised-cleaned",
       "build": "cargo build --release --target-dir bin",
-      "run": "bin/release/sudoku"
+      "run": "bin/release/sudoku",
+      "enabled": false
     }
   }
 }
