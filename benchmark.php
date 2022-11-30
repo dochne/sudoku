@@ -51,20 +51,28 @@ foreach ($directories as $folder) {
     }
 }
 
-$noCache = ($argv[1] ?? "") ==="--no-cache";
+$arg1 = $argv[1] ?? "";
+$noCache = $arg1 ==="--no-cache";
 
 if ($noCache) {
     echo "Cache disabled!\n";
 }
 echo "Running Benchmarks\n";
 foreach ($implementations as $index => ["language" => $language, "folder" => $folder, "name" => $name, "config" => $config]) {
-
+    $implementation = $implementations[$index];
 
     foreach ($examples as $id => $example) {
+        $skipCache = $noCache || $arg1 === "--no-cache=" . $implementation["folder"] . "/" . $implementation["name"];
+
         echo "Running {$language}/{$name} Example {$id}\n";
+
         $cacheFilename = __DIR__ . "/cache/".$folder . "-" . str_replace(" ", "", $name) . "-{$id}";
 
-        if (!file_exists($cacheFilename) || $noCache) {
+        if (!file_exists($cacheFilename) || $skipCache) {
+            if (file_exists($cacheFilename) && $skipCache) {
+                echo "Skipping cache for {$arg1}\n";
+            }
+            
             chdir($folder);
             if (isset($config["dir"])) {
                 if (!file_exists($config["dir"])) {
