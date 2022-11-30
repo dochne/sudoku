@@ -6,6 +6,9 @@
     },
     "better_version": {
       "run": "ruby better_version/sudoku.rb"
+    },
+    "ref": {
+      "run": "ruby ref/sudoku.rb"
     }
   }
 }
