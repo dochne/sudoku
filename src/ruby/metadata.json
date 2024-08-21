@@ -9,6 +9,9 @@
     },
     "ref": {
       "run": "ruby ref/sudoku.rb"
+    },
+    "optimised": {
+      "run": "ruby optimised/sudoku.rb"
     }
   }
 }

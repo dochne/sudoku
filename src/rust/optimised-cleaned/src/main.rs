@@ -4,8 +4,9 @@ use std::env;
 // use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
-
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::time::Duration;
 
 use math::round;
 
@@ -25,7 +26,8 @@ struct Grid {
     cell_links: CellLinks,
     links: Links,
     empty_cells: HashSet<usize>,
-    complete: bool
+    complete: bool,
+    start: Option<Duration>
 }
 
 type NumberToBinaryMap = [usize; 10];
@@ -105,21 +107,32 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let filename = &args[1];
     let cells = read_file(filename);
-    let grid = build_grid(cells);
+    let mut grid = build_grid(cells);
     
+    // let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+    grid.start = Some(SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
     let grid = solve(grid);
-    if grid.complete {
-        print_grid(grid);
-    } else {
-        println!("Unable to complete")
-    }
+    // let after = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+
+    // if grid.complete {
+    //     print!("{{\"time\":{:?},\"output\":\"", (after - start).as_nanos() / 1000);
+    //     print_grid(grid);
+    //     println!("\"}}");
+    // } else {
+    //     println!("Unable to complete")
+    // }
 }
+
 
 fn solve(mut grid: Grid) -> Grid {
     if grid.empty_cells.len() == 0 {
+        // print_grid(grid);
+        let after = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        print!("{{\"time\":{:?},\"output\":\"", (after - grid.start.unwrap()).as_nanos() / 1000);
         print_grid(grid);
+        println!("\"}}");
         std::process::exit(0);
-        //return grid;
+        // return grid;
     }
 
     let mut lowest_link_total = 10;
@@ -305,7 +318,8 @@ fn build_grid(cells: Cells) -> Grid {
         cell_links,
         links,
         empty_cells,
-        complete: false
+        complete: false,
+        start: None
     }
 }
 

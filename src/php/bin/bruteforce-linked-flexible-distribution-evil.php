@@ -268,7 +268,7 @@ solve($grid);
 //echo "Time:" . microtime(true) - $start . "\n";
 
 echo json_encode([
-    "time" => microtime(true) - $start,
+    "time" => (microtime(true) - $start) * 1_000_000,
     "output" => $grid->output(),
     "iterations" => $grid->iterations
 ], JSON_PRETTY_PRINT);

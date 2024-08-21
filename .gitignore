@@ -11,3 +11,4 @@ vendor
 /venv
 .vscode
 /node_modules
+/examples/scratch/*

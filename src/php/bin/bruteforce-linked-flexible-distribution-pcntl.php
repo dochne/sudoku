@@ -275,7 +275,7 @@ while (count($pids) > 0 && ($changedPid = pcntl_waitpid(0, $status)) != -1) {
     unset($pids[$changedPid]);
     if (($content = trim(shmop_read($monitor, 0, 100))) !== "") {
         echo json_encode([
-            "time" => microtime(true) - $start,
+            "time" => (microtime(true) - $start) * 1_000_000,
             "output" => $content,
             "iterations" => $grid->iterations
         ], JSON_PRETTY_PRINT);
@@ -295,9 +295,9 @@ exit("Failed");
 //solve($grid);
 //echo "Time:" . microtime(true) - $start . "\n";
 
-echo json_encode([
-    "time" => microtime(true) - $start,
-    "output" => $output,
-    "iterations" => $grid->iterations
-], JSON_PRETTY_PRINT);
+// echo json_encode([
+//     "time" => (microtime(true) - $start) * 1_000_000,
+//     "output" => $output,
+//     "iterations" => $grid->iterations
+// ], JSON_PRETTY_PRINT);
 

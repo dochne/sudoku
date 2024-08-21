@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
 use std::process;
+use std::time::{SystemTime, UNIX_EPOCH, Duration};
 // use math::round::floor;
 use math::round;
 
@@ -36,7 +37,8 @@ pub struct Grid {
     number_map: Vec<Vec<usize>>,
     total_map: [usize; 512],
     inverse_map: HashMap<usize, usize>,
-    success: bool
+    success: bool,
+    start: Duration
 }
 
 impl Grid {
@@ -137,7 +139,16 @@ impl Grid {
     fn solve(&mut self) -> bool {
         if self.empty_cells.len() == 0 {
             self.success = true;
+
+            let after = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            // let grid = complete_grid.unwrap();
+            
+            
+            print!("{{\"time\":{:?},\"output\":\"", (after - self.start).as_nanos() / 1000);
             self.print();
+            println!("\"}}");
+            
+            
             //system.process.exit(0);
             process::exit(0);
             // return true;
@@ -315,12 +326,11 @@ fn main() {
         number_map,
         total_map,
         inverse_map,
-        success: false
+        success: false,
+        start: SystemTime::now().duration_since(UNIX_EPOCH).unwrap()
     };
 
-    let complete_grid = sudoku_grid.begin_solve();
-    match complete_grid {
-        Some(grid) => grid.print(),
-        None => println!("Unsolvable")
-    }
+
+    sudoku_grid.begin_solve();
+
 }

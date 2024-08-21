@@ -306,7 +306,7 @@ while (count($pids) > 0 && ($changedPid = pcntl_waitpid(0, $status)) != -1) {
     unset($pids[$changedPid]);
     if (($content = trim(shmop_read($monitor, 0, 100))) !== "") {
         echo json_encode([
-            "time" => microtime(true) - $start,
+            "time" => (microtime(true) - $start) * 1_000_000,
             "output" => $content,
             "iterations" => $grid->iterations
         ], JSON_PRETTY_PRINT);
@@ -324,20 +324,20 @@ while (count($pids) > 0 && ($changedPid = pcntl_waitpid(0, $status)) != -1) {
 exit("Failed");
 
 
-solve($grid);
+// solve($grid);
 
 
 
 
-foreach ($grid->cells as $k => $value) {
-    $grid->cells[$k] = fromBinary($value);
-}
+// foreach ($grid->cells as $k => $value) {
+//     $grid->cells[$k] = fromBinary($value);
+// }
 
-//echo "Time:" . microtime(true) - $start . "\n";
+// //echo "Time:" . microtime(true) - $start . "\n";
 
-echo json_encode([
-    "time" => microtime(true) - $start,
-    "output" => $grid->output(),
-    "iterations" => $grid->iterations
-], JSON_PRETTY_PRINT);
+// echo json_encode([
+//     "time" => (microtime(true) - $start) * 1_000_000,
+//     "output" => $grid->output(),
+//     "iterations" => $grid->iterations
+// ], JSON_PRETTY_PRINT);
 

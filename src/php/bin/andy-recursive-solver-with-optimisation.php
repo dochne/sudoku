@@ -49,7 +49,7 @@ try {
 
 // Show the completed grid
 echo json_encode([
-    "time" => microtime(true) - $start,
+    "time" => (microtime(true) - $start) * 1_000_000,
     "output" => $printer->printGrid($grid)
 ], JSON_PRETTY_PRINT);
 

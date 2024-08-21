@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"math"
 	"fmt"
+	"time"
 )
 
 /**
@@ -48,8 +49,19 @@ func main() {
 		row++
 	}
 
+	start := time.Now()
+
 	if grid.Solve() {
+
+		duration := time.Since(start)
+
+		fmt.Print("{\"time\":" + strconv.FormatInt(duration.Nanoseconds() / 1_000, 10) + ",\"output\":\"")
+		// print!("{{\"time\":{:?},\"output\":\"", (after - start).as_nanos() / 1000);
+		
+
 		grid.Print()
+
+		fmt.Print("\"}")
 	}
 }
 
@@ -113,8 +125,8 @@ func (g *Grid) Solve() bool {
 func (g Grid) Print() {
 	for rowIndex := 0; rowIndex < 9; rowIndex++ {
 		for colIndex := 0; colIndex < 9; colIndex++ {
-			fmt.Print(strconv.FormatInt(int64(g.cells[rowIndex][colIndex]), 10) + " ")
+			fmt.Print(strconv.FormatInt(int64(g.cells[rowIndex][colIndex]), 10) + "")
 		}
-		fmt.Print("\n")
+		fmt.Print("")
 	}
 }
