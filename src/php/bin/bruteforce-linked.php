@@ -85,6 +85,8 @@ class Grid {
     public $links;
     public $pos = 0;
 
+    public $iterations = 0;
+
     public function __construct(array $cells, array $cellLinks, array $links)
     {
         $this->cells = $cells;
@@ -165,7 +167,7 @@ solve($grid);
 //echo "Time:" . microtime(true) - $start . "\n";
 
 echo json_encode([
-    "time" => microtime(true) - $start,
+    "time" => (microtime(true) - $start) * 1_000_000,
     "output" => $grid->output(),
     "iterations" => $grid->iterations
 ], JSON_PRETTY_PRINT);

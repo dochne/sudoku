@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+require "date"
+require "json"
+
 class Grid
 
     def initialize()
@@ -44,12 +47,13 @@ class Grid
     end
 
     def output()
-        @cells.each do |row|
-            row.each do |col|
-                print(col)
-            end
-            print("\n")
-        end
+        @cells
+        # .each do |row|
+        #     row.each do |col|
+        #         print(col)
+        #     end
+        #     print("\n")
+        # end
     end
 
     def solve() 
@@ -93,8 +97,19 @@ content = File.read(filename).gsub(/\r/, "").split("\n")
     end
 # end
 
+start = DateTime.now
 grid.solve()
-grid.output()
+duration = ((DateTime.now - start).to_f * 1_000_000)
+p("Failed") if !grid
+
+print(JSON({
+    "time" => duration,
+    # "output" => grid.output()
+    "output" => grid.output().each_slice(9).map(&:join).map(&:to_s).join("\n")
+}));
+
+# grid.solve()
+# grid.output()
 
     # for col in range(len(row)):
     #     try:

@@ -1,4 +1,5 @@
-
+require "date"
+require "json"
 
 class Grid
     def initialize(grid_array)
@@ -66,5 +67,14 @@ grid = Grid.new(content.map do | row |
     row.split("").map{| value | value == ' ' ? nil : Integer(value)} 
 end)
 
+start = DateTime.now
 grid.solve
-print grid.output
+duration = ((DateTime.now - start).to_f * 1_000_000)
+
+print(JSON({
+    "time" => duration,
+    # "output" => grid.output()
+    "output" => grid.output
+}));
+
+# print 

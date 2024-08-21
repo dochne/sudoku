@@ -6,7 +6,11 @@
     },
     "pypy-bruteforce": {
       "run": "pypy3 main.py",
-      "enabled": false
+      "enabled": true
+    },
+    "cython-bruteforce": {
+      "run": "cython main.py",
+      "enabled": true
     }
   }
 }

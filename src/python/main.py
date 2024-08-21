@@ -1,5 +1,7 @@
 import sys
 import math
+import time
+import json
 
 
 class Grid:
@@ -33,10 +35,14 @@ class Grid:
         return True
 
     def output(self):
-        for row in self.cells:
-            for col in self.cells[row]:
-                print(self.cells[row][col], "", end='')
-            print("\n", end='')
+        return ''.join(str(self.cells[row][col]) for row in self.cells for col in self.cells[row])
+
+        # for row in self.cells:
+        #     # print(row.join(""))
+        #     for col in self.cells[row]:
+        #         # self.cells.join(",")
+        #         print(self.cells[row][col], "", end='')
+            # print("", end='')
 
     def solve(self):
         for rowIndex in self.cells:
@@ -69,7 +75,9 @@ for row_i, row in enumerate(lines):
         except ValueError as e:
             pass
 
+start_time = time.time()  # Start the timer
 if grid.solve():
-    grid.output()
+    duration = time.time() - start_time    # End the timer
+    print("{\"time\":" + str(duration) + ",\"output\":\"" + grid.output() + "\"}");
 else:
     print("Unsolvable")

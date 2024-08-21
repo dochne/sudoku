@@ -4,23 +4,12 @@ use std::env;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::{BufRead, BufReader};
+use std::time::{SystemTime, UNIX_EPOCH};
 
-// use math::round::floor;
 use math::round;
 
 
 extern crate math;
-//extern crate reqwest;
-
-
-/*
-links: ,
-cell_links,
-empty_cells,
-number_map,
-total_map
-*/
-
 
 type Cells = [usize; 81];
 type Links = [usize; 27];
@@ -40,7 +29,7 @@ impl Grid {
 
     fn print(&self) {
         for (key, value) in self.cells.iter().enumerate() {
-            if key % 9 == 0 {
+            if (key % 9 == 0) && key > 0 {
                 println!()
             }
 
@@ -229,8 +218,13 @@ fn main() {
         inverse_map
     };
 
+
+    let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     if sudoku_grid.solve() {
+        let after = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        print!("{{\"time\":{:?},\"output\":\"", (after - start).as_nanos() / 1000);
         sudoku_grid.print();
+        println!("\"}}");
     } else {
         println!("Unsolvable!")
     }

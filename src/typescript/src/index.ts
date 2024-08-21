@@ -91,5 +91,13 @@ for (let row = 0; row < rows.length; row++) {
     }
 }
 
+// const start = Date.now();
+const start = process.hrtime.bigint();
 grid.solve();
+
+const duration = Number(process.hrtime.bigint() - start) / 1_000;
+// const duration = (Date.now() - start) * 1_000;
+
+console.log("{\"time\":" + duration + ",\"output\":\"");
 grid.print();
+console.log("\"}");

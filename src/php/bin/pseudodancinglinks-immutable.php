@@ -8,7 +8,7 @@ $start = microtime(true);
 $grid = $solver->solve($grid);
 
 echo json_encode([
-    "time" => microtime(true) - $start,
+    "time" => (microtime(true) - $start) * 1_000_000,
     "output" => $grid->print()
 ]);
 

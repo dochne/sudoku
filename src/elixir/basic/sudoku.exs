@@ -41,7 +41,7 @@ defmodule Sudoku do
   #     # IO.puts(Enum.at(Enum.at(from_file, row), column))
   #     # List.update_at(list, cursor, Enum.at(Enum.at(from_file, row), column))
   #   end
-  end
+#  end
 
 
   def build_col(remaining) do
@@ -49,13 +49,13 @@ defmodule Sudoku do
   end
 
 
-  def solve(cells) do
-    Enum.each do cells, fn -> cell
-      # p("Hello")
-      IO.puts("Hello")
-    end
-    # IO.puts("Hello")
-  end
+#  def solve(cells) do
+#    Enum.each do cells, fn -> cell
+#      # p("Hello")
+#      IO.puts("Hello")
+#    end
+#    # IO.puts("Hello")
+#  end
 
 
 

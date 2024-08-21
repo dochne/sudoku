@@ -2,6 +2,7 @@
 use std::fs::File;
 use std::env;
 use std::io::{BufRead, BufReader};
+use std::time::{SystemTime, UNIX_EPOCH};
 // use math::round::floor;
 use math::round;
 
@@ -111,8 +112,12 @@ fn main() {
         }
     }
 
+    let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     if sudoku_grid.solve() {
+        let after = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        print!("{{\"time\":{:?},\"output\":\"", (after - start).as_nanos() / 1000);
         sudoku_grid.print();
+        println!("\"}}");
     } else {
         println!("Unsolvable!")
     }

@@ -1,3 +1,5 @@
+require "json"
+require "date"
 
 class Cell
     def initialize(value, cell_id)
@@ -114,8 +116,22 @@ grid = Grid.new(content.map do | row |
     row.split("").map{| value | value == ' ' ? nil : Integer(value)} 
 end)
 
+
+
+
+start = DateTime.now
+# grid = solve(grid, constraints)
 grid.solve
+duration = ((DateTime.now - start).to_f * 1_000_000)
+p("Failed") if !grid
+
+print(JSON({
+    "time" => duration * 1000,
+    "output" => grid.output
+}));
+
+
 
 # print grid.cells.map(&:value)
 # grid.solve
-print grid.output
+# print grid.output

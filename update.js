@@ -18,7 +18,7 @@ const exec = promisify(callbackExec);
     console.log("Running migrations");
 
     const db = await open({
-        filename: './database.db',
+        filename: './public/database.db',
         driver: sqlite3.Database,
     })
 
@@ -28,14 +28,13 @@ const exec = promisify(callbackExec);
     const runMigrations = [...(await db.all("SELECT filename FROM migrations"))].map((row) => row.filename);
 
     console.log("All", allMigrations, "run", runMigrations);
-    allMigrations.filter((filename) => !runMigrations.includes(filename)).forEach(async (filename) => {
+    for (const filename of allMigrations.filter((filename) => !runMigrations.includes(filename))) {
         console.log(runMigrations, "filename", filename);
         const migrationSql = (await fs.readFile('./migrations/' + filename)).toString();
         await db.exec(`BEGIN; ${migrationSql}; INSERT INTO migrations (filename) VALUES ('${filename}'); COMMIT;`)
-    });
+    };
     
     
-
     const examples = await Promise.all((await fs.readdir('examples')).map(async filename => ({
         id: filename,
         inputFilename: __dirname + '/examples/' + filename + "/input.txt",
@@ -46,9 +45,11 @@ const exec = promisify(callbackExec);
 
     const folders = await fs.readdir('src');
 
-    folders.forEach(async (folder) => {
+    for (const folder of folders) {
         const metadataFilename = "src/" + folder + "/metadata.json";
-        if (!(await exists(metadataFilename))) return;
+        if (!(await exists(metadataFilename))) {
+            continue;
+        }
         
         const {language, implementations} = JSON.parse((await fs.readFile(metadataFilename)).toString());
         console.log(`Processing ${language}`)
@@ -56,73 +57,92 @@ const exec = promisify(callbackExec);
         for (const [implementation, info] of Object.entries(implementations)) {
             console.log(`  Implementaton ${implementation}`)
             await db.run(
-                'INSERT INTO implementation (language, implementation) VALUES (?, ?) ON CONFLICT (language, implementation) DO NOTHING',
+                'INSERT INTO implementations (language, name) VALUES (?, ?) ON CONFLICT (language, name) DO NOTHING',
                 language,
                 implementation,
             )
 
             const implementationRow = await db.get(
-                'SELECT * FROM implementation WHERE language=? AND implementation=?',
+                'SELECT * FROM implementations WHERE language=? AND name=?',
                 language,
                 implementation
             );
 
             // We'll need to do a check on force
-            const lastExecution = await db.get(
-                'SELECT * FROM execution WHERE implementation_id=? ORDER BY created_at DESC',
+            const lastExecution = await db.all(
+                'SELECT count(*) as total FROM executions WHERE implementation_id=? ORDER BY created_at DESC',
                 implementationRow.id
             );
 
-            // console.log("Last Execution", lastExecution);
-            if (lastExecution === undefined) {
-                console.log("  Attempting Execution");
+            if (lastExecution[0].total !== examples.length) {
+                console.log(`  Attempting Execution - ${language} ${implementation}`);
                 const directory = __dirname + `/src/${folder}/` + (info['dir'] ?? '');
-                // await exec('')
-                
+
                 if (info['build'] !== undefined) {
                     try{
                         await exec(info['build'], {
                             cwd: directory
                         })    
                     } catch (err) {
-                        console.error("Unable to build project");
+                        console.error("    Unable to build project", err);
                         continue;
                     }
                 }
                 
                 for (const example of examples) {
-                    console.log("Executing", directory);
+                    console.log("Executing", example.id);
                     try{
-                        const before = Date.now();
+                        const before = process.hrtime.bigint();
+// grid.solve();
+
+// const duration = process.hrtime.bigint() - start;
+
+//                         const before = Date.now();
                         const { error, stdout, stderr } = await exec(`${info['run']} ${example.inputFilename}`, {
                             cwd: directory
                         });
-                        const nodeDuration = (Date.now() - before) / 1000;
+                        // const nodeDuration = (Date.now() - before);
+                        const nodeDuration = process.hrtime.bigint() - before;
                         const trimmed = stdout.trim();
 
-                        let output = trimmed;
+                        let output = '';
                         let time = null;
                         let meta = {};
 
                         try{
-                            const parsed = JSON.parse(trimmed);
-                            output = parsed['output'] || output;
+                            const parsed = JSON.parse(trimmed.replaceAll("\n", ""));
+                            output = (parsed['output'] || output).trim();
                             time = parsed['time'] || time
                             meta = parsed['meta'] || meta;
+                            // console.log(parsed);
                         } catch (err) {
-
+                            // console.log(trimmed.replaceAll("\n", ""));
+                            console.log(err);
                         }
 
+                        // console.log("Parsed", example.output, output, time);
+
                         // console.log("Duration", JSON.parse(stdout.trim()));
+                        await db.run("DELETE FROM executions WHERE implementation_id=? AND example_id=?", [implementationRow['id'], example['id']]);
+
+                        // console.log("Input1", output.replaceAll(" ", "").replaceAll("\n", ""), "Input2", example.output.replaceAll(" ", "").replaceAll("\n", ""));
+
+                        // console.log("Foo");
                         await db.run(
-                            `INSERT INTO execution (implementation_id, example_id, self_duration, node_duration, meta, result) VALUES(?, ?, ?, ?, ?, ?)`,
+                            `INSERT INTO executions
+                                (implementation_id, example_id, self_duration, node_duration, meta, result)
+                                VALUES (?, ?, ?, ?, ?, ?)`,
                             implementationRow['id'],
                             example['id'],
-                            time,
-                            nodeDuration,
+                            parseInt(time, 10),
+                            parseInt(Number(nodeDuration) / 1_000, 10),
                             JSON.stringify(meta),
-                            output.replaceAll(" ", "") === example.output ? 1 : 0
+                            (output.replaceAll(" ", "").replaceAll("\n", "") === example.output.replaceAll(" ", "").replaceAll("\n", "")) ? 1 : 0
                         );
+
+                        // let same = output.replaceAll(" ", "").replaceAll("\n", "") === example.output.replaceAll(" ", "").replaceAll("\n", "") ? 1 : 0
+
+                        // console.log("Compare", output.replaceAll(' ', ''), "Output2", example.output.replaceAll(' ', ''), same);
                         console.log("Execution complete!");
                     } catch (err) {
                         console.log("Err", err)
@@ -154,7 +174,7 @@ const exec = promisify(callbackExec);
         // const metadata = JSON.parse("")
         // implementations.push([])
         // console.log(language);
-    });
+    };
 
 })();
 
