@@ -12,3 +12,5 @@ vendor
 .vscode
 /node_modules
 /examples/scratch/*
+/server/target/debug
+/server/bin
