@@ -9,10 +9,6 @@ import { dirname } from 'path'
 const __dirname = dirname(import.meta.url.replace('file://', ''));
 const exec = promisify(callbackExec);
 
-// console.log(__filename);
-// console.log(basename(__filename));
-// console.log();
-
 
 (async () => {
     console.log("Running migrations");
@@ -93,11 +89,6 @@ const exec = promisify(callbackExec);
                     console.log("Executing", example.id);
                     try{
                         const before = process.hrtime.bigint();
-// grid.solve();
-
-// const duration = process.hrtime.bigint() - start;
-
-//                         const before = Date.now();
                         const { error, stdout, stderr } = await exec(`${info['run']} ${example.inputFilename}`, {
                             cwd: directory
                         });
@@ -150,33 +141,8 @@ const exec = promisify(callbackExec);
                     }   
                 }
             }
-
-            // console.log(lastExecution);
-
-
-
-
-
-            // examples.forEach()
-            // if (value)
-            // console.log("Value", value);
-
-
-
-
-            // console.log(result);
-            // const foo = await db.run(`INSERT OR     `)
-
-            // const implementation = 
-            // console.log(language, implementations);
         };
-        
-        // const metadata = JSON.parse("")
-        // implementations.push([])
-        // console.log(language);
+    
     };
 
 })();
-
-
-// console.log(files);

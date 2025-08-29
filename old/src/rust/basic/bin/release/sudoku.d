@@ -1,0 +1,1 @@
+/Users/doug/src/github.com/dochne/sudoku/src/rust/basic/bin/release/sudoku: /Users/doug/src/github.com/dochne/sudoku/src/rust/basic/src/main.rs /Users/doug/src/github.com/dochne/sudoku/src/rust/lib/socket_wrapper/src/lib.rs
