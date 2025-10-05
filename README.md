@@ -1,39 +1,73 @@
-# sudoku
-Basic Sudoku solvers.
+# Sudoku
 
 A common problem whenever starting to learn a new language is that it's a pain to come up with something to do.
 
 So this is my "Doug implements the same thing in many different languages"
 
 It's actually kind of a nice problem to solve as it involves a bunch of base programming concepts
-that are very useful to know in each language:
 - basic maths (floor)
 - basic OO (grid)
 - maps/dictionaries/arrays (based on the language)
 - byref in the relevant languages
 - recursion
 - loops
-- control flow (if's :P)
-- file io
-- argv
+- control flow
+- env vars
+- sockets
 
-## Todo:
-This kind of microbenchmark is so... micro'y, that it isn't really helpful. I think an interesting change would be to instead
-write a "sudoku server" that binds to a unix port. The conversation would look like this:
-1. Client -> Server: "Hi! I'm typescript:bruteforce!"
-2. Server -> Client: 3243262234324330432433 (sudoku to solve)
-3. Client -> Server: 3243262234324330432433 (solved sudoku)
-4. if client is wrong, kill connection
-5. if client is right, continue ad nauseum until X time has passed (say, 10 seconds) then we rate it as sudokus per second
+## How do I write an implementation?
 
-## Potential languages to still do:
+After many years of having awful awful ways of trying to measure how fast an implementation is, I've switched it up a bit!
+
+### Makefile
+
+Add a makefile with a `run` method in it - this should trigger an execution
+If you're feeling particularly spicy, add a `profile` method in there too. 
+
+Any given implementation should handle two potential sources of input.
+
+### SUDOKU env var
+
+Crucial for when you're debugging and writing your implementation, your implementation should listen for an env variable named
+SUDOKU. This will contain 81 characters of text, where the number 0 will represent a number that we do not know.
+
+The output should be a similar 81 chars, followed by a newline.
+
+### Socket Handling
+
+Once you're happy your implementation works, we should instead move onto the system used for Benchmarking!
+
+This works with a very very basic protocol onto a server we'll have running on the machine.
+
+Your program should connect to the `/tmp/sudoku.sock` unix socket, then send `$language:$implementation` (e.g. `ruby:basic`)
+The server will then start sending sudoku's at you to solve (in the form of 81 characters of text).
+You should respond with the answer - at which point you should listen again as it'll send you the next sudoku.
+
+Benchmarks are saved in a database locally named `var/database.db` which will then update `benchmark.md`
+
+## Execution
+
+
+- `make server` will start the background server
+- `make run` will trigger running *every* implementation
+- `make run rust` will trigger every rust implementation
+- `make run rust/basic` will run the rust/basic implementation
+- `make update` will automatically start the server, then run `make run`
+
+- `make test` will trigger *every* implementation with a SUDOKU env var
+- `make test rust` ...you get the idea
+
+
+## Languages:
+
+There's a few languages/implementations still to port over - but here's a bunch of ideas
 
 ~- Ruby~
 - C
 - C#
 - LUA
 - Kotlin
-- Java (lol)
+- Java
 - Swift
 - Something in Lisp maybe?
 - C++?
@@ -43,21 +77,3 @@ write a "sudoku server" that binds to a unix port. The conversation would look l
 - ZIG
 - Elixir
 - Lisp of some kind (hahaha probably not)
-
-
-```
-SELECT
-language,
-name,
-sum(case example_id when 1 then node_duration else 0 end) as example_1,
-sum(case example_id when 2 then node_duration else 0 end) as example_2,
-sum(case example_id when 3 then node_duration else 0 end) as example_3,
-sum(case example_id when 4 then node_duration else 0 end) as example_4,
-sum(case example_id when 5 then node_duration else 0 end) as example_5,
-avg(node_duration) as example_duration
-FROM implementations
-INNER JOIN executions ON (executions.implementation_id=implementations.id)
-WHERE result=1
-GROUP BY implementations.id
-ORDER BY example_duration desc;
-```

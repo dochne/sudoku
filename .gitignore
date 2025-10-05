@@ -1,7 +1,6 @@
 .idea
 vendor
 /src/php/vendor
-/cache
 /composer.lock
 /src/golang/basic/basic
 /src/rust/*/bin
@@ -12,5 +11,18 @@ vendor
 .vscode
 /node_modules
 /examples/scratch/*
-/server/target/debug
+
+
+src/typescript/node_modules
+src/typescript/dist
+
+src/rust/*/bin
+src/rust/*/target
+
+src/crystal/*/sudoku
+src/crystal/*/sudoku.dwarf
+
+/server/target
 /server/bin
+/var/*
+.DS_Store

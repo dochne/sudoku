@@ -12,10 +12,10 @@ use std::path::Path;
 // use std::time::{Duration, Instant};
 
 
-async fn handle_connection(mut socket: UnixStream) {
+async fn handle_connection(mut socket: UnixStream, root_folder: &str) {
     let mut buf = vec![0; 1024];
     
-    let file = File::open("../examples/scratch/sudoku.csv").unwrap();
+    let file = File::open(format!("{}var/samples.csv", root_folder)).unwrap();
     let buffered_reader = BufReader::with_capacity(64 * 1024, file);
 
     let mut rdr = ReaderBuilder::new()
@@ -30,7 +30,6 @@ async fn handle_connection(mut socket: UnixStream) {
     };
 
     let split: Vec<&str> = client_name.split(":").collect();
-    println!("{:#?}", split);
     let language = split.get(0).unwrap();
     let name = split.get(1).unwrap();
     println!("Language {}; Name {}", language, name);
@@ -69,23 +68,48 @@ async fn handle_connection(mut socket: UnixStream) {
         }
     }
     let duration = start_time.elapsed();
-    let mut per_second = 0.0;
+    let mut solves_per_second = 0.0;
     println!("Elapsed: {:#?}", duration);
     println!("Solves: {:#?}", solves);
     println!("Responses: {:#?}", responses);
     
     if solves > 0 {
-        per_second = f64::from(solves) / duration.as_secs_f64();
-        println!("Solves per second: {:#?}", per_second);
+        solves_per_second = f64::from(solves) / duration.as_secs_f64();
+        println!("Solves per second: {:#?}", solves_per_second);
     }
 
-    let conn = Connection::open("../benchmark.db").unwrap();
+    let conn = Connection::open(format!("{}var/benchmark.db", root_folder)).unwrap();
     conn.execute(
-        "INSERT INTO execution (language, name, solves, duration, per_second) VALUES (?1, ?2, ?3, ?4, ?5)
-         ON CONFLICT(language, name) DO UPDATE SET solves = excluded.solves, duration = excluded.duration, per_second=excluded.per_second",
-        params![language, name, solves, duration.as_secs_f64(), per_second],
+        "INSERT INTO execution (language, name, solves, duration, solves_per_second, complete_success, modified_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP)
+         ON CONFLICT(language, name) DO UPDATE SET solves = excluded.solves, duration = excluded.duration, solves_per_second=excluded.solves_per_second, complete_success=excluded.complete_success, modified_at=CURRENT_TIMESTAMP",
+        params![language, name, solves, duration.as_secs_f64(), solves_per_second, if responses == solves { 1 } else {0} ],
     ).unwrap();
 
+    let mut stmt = conn.prepare("SELECT * FROM execution ORDER BY complete_success DESC, solves_per_second DESC").unwrap();
+
+
+    let mut results: Vec<String> = vec![
+        "|Language|Implementation Name|Complete Success|Solves Per Second|Last Run At|".into(),
+        "|---|---|---|---|---|".into(),
+    ];
+
+    let mut rows = stmt.query([]).unwrap(); // No need for 'params!' if no parameters
+    while let Some(row) = rows.next().unwrap() {
+        results.push(
+            format!(
+                "|{}|{}|{}|{}|{}|",
+                row.get::<_, String>("language").unwrap(),
+                row.get::<_, String>("name").unwrap(),
+                if row.get::<_, i32>("complete_success").unwrap() == 1 { "✅" } else { "❌" },
+                (row.get::<_, f64>("solves_per_second").unwrap() * 100.0).round() / 100.0,
+                row.get::<_, String>("modified_at").unwrap()
+            )
+        );
+    }
+
+    std::fs::write(format!("{}BENCHMARK.md", root_folder), results.join("\n")).unwrap();
+
+    // println!("{:#?}", results);
 }
 
 #[tokio::main]
@@ -97,18 +121,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::fs::remove_file(socket_path)?;
     }
 
+    let root_folder = if Path::new("var").is_dir() {
+        "./"
+    } else {
+        "../"
+    };
+
     let listener = UnixListener::bind(socket_path)?;
-    let conn = Connection::open("../benchmark.db")?;
+    let conn = Connection::open(format!("{}var/benchmark.db", root_folder))?;
 
     // Run the migration to create the table if it doesn't exist
     conn.execute("
         CREATE TABLE IF NOT EXISTS execution (
             language TEXT NOT NULL,
             name TEXT NOT NULL DEFAULT '0',
-            solves INTEGER NOT NULL,
             duration REAL NOT NULL,
-            per_second REAL NOT NULL,
+            solves INTEGER NOT NULL,
+            solves_per_second  REAL NOT NULL,
+            complete_success INTEGER NOT NULL DEFAULT '0',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (language, name)
         )
     ",
@@ -118,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let (socket, _) = listener.accept().await?;
         tokio::spawn(async move {
-            handle_connection(socket).await;
+            handle_connection(socket, root_folder).await;
         });
     }
 }
