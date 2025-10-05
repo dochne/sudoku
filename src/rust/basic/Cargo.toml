@@ -1,0 +1,11 @@
+[package]
+
+name = "sudoku"
+version = "0.0.1"
+authors = [ "Doug Nelson <dougnelson@silktide.com>" ]
+
+[dependencies]
+socket_wrapper = { path = "../lib/socket_wrapper" }
+
+libmath = "0.2.1"
+

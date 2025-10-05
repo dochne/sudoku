@@ -17,16 +17,39 @@ that are very useful to know in each language:
 - file io
 - argv
 
-## Todo:
-This kind of microbenchmark is so... micro'y, that it isn't really helpful. I think an interesting change would be to instead
-write a "sudoku server" that binds to a unix port. The conversation would look like this:
-1. Client -> Server: "Hi! I'm typescript:bruteforce!"
-2. Server -> Client: 3243262234324330432433 (sudoku to solve)
-3. Client -> Server: 3243262234324330432433 (solved sudoku)
-4. if client is wrong, kill connection
-5. if client is right, continue ad nauseum until X time has passed (say, 10 seconds) then we rate it as sudokus per second
+## How do I write an implementation?
+
+### Socket Handling
+
+Benchmarking is done by running a server socket on `/tmp/sudoku.sock`.
+It expects to receive a message that looks lke `language:name` - after which it will start sending out partially solved sudoku's.
+
+An implementation should take the 81 bytes of the sudoku - solve it, then return the solved sudoku (one long character string, no new lines).
+
+After receiving it, the server will send another sudoku.
+
+We judge speed based on the number of solves in a given 10 second period.
+
+### Debug Handling
+
+As this would be a pain to debug, your code should also accept 81 sudoku characters as string input in STDIN.
+
+If this is set, it should instead solve this, then print it out.
+
+## Running Benchmarking
+
+Each implementation should live in it's own separate folder, and be triggered by a Makefile running `make run`
+
+The simplest way to execute this is is by running `make update`
+
+The more complicated way is to run the server with: `make server`, then either run all the implementations with `make run` in the root directory or 
+You can run the background server with `make server`. You can automatically run every implementation by running `make run` in the root directory.
+
 
 ## Potential languages to still do:
+
+We have a whole bunch of languages within old, but I'm slowly converting these to be in the "new" format using unix sockets
+as the old version (exec) was incredibly inaccurate due to noise
 
 ~- Ruby~
 - C
