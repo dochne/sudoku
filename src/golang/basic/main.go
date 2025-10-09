@@ -59,7 +59,7 @@ func main() {
 			os.Exit(0)
 		}
 
-		_, err = conn.Write([]byte(solve(strings.TrimSpace(string(buf)))))
+		_, err = conn.Write([]byte(solve((string(buf))))
 		if err != nil {
 			os.Exit(0)
 		}

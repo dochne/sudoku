@@ -85,6 +85,7 @@ function solve(string $string) {
     return $grid->output();
 }
 
+
 if ($_ENV["SUDOKU"]) {
     $content = trim($_ENV["SUDOKU"]);
     echo solve($content) . "\n";

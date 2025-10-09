@@ -2,7 +2,6 @@ mod constants;
 extern crate math;
 extern crate once_cell;
 
-
 use constants::{BINARY_MAP, INVERTED_BINARY_MAP, NUMBER_MAP, TOTAL_MAP};
 
 use std::collections::HashSet;
@@ -67,24 +66,22 @@ impl Grid {
         let l3 = self.cell_links[pos][2];
         self.empty_cells.remove(&pos);
 
-
-        //let numbers = self.number_map[pos_key].iter().enumerate();
         for n in 0..NUMBER_MAP[pos_key].len() {
             let number = NUMBER_MAP[pos_key][n];
 
             self.cells[pos] = number;
 
-            self.links[l1] = self.links[l1] ^ number;
-            self.links[l2] = self.links[l2] ^ number;
-            self.links[l3] = self.links[l3] ^ number;
+            self.links[l1] ^= number;
+            self.links[l2] ^= number;
+            self.links[l3] ^= number;
 
             if self.solve() {
                 return true;
             }
 
-            self.links[l1] = self.links[l1] | number;
-            self.links[l2] = self.links[l2] | number;
-            self.links[l3] = self.links[l3] | number;
+            self.links[l1] |= number;
+            self.links[l2] |= number;
+            self.links[l3] |= number;
         }
 
         self.empty_cells.insert(pos);
@@ -127,9 +124,9 @@ fn solve(input: &str) -> String {
     // And we'll follow it up by populating the links! :)
     for key in 0..81 {
         if cells[key] != 0 {
-            links[cell_links[key][0]] = links[cell_links[key][0]] ^ cells[key];
-            links[cell_links[key][1]] = links[cell_links[key][1]] ^ cells[key];
-            links[cell_links[key][2]] = links[cell_links[key][2]] ^ cells[key];
+            links[cell_links[key][0]] ^= cells[key];
+            links[cell_links[key][1]] ^= cells[key];
+            links[cell_links[key][2]] ^= cells[key];
         }
     }
 
